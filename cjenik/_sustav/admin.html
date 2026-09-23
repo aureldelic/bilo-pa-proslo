@@ -20,6 +20,10 @@
     <span id="tekstAzuriranja"></span>
     <button class="gumb mali glavni" id="azurirajSada">Ažuriraj sada</button>
   </div>
+  <div class="obavijest" id="bezEmaila" hidden>
+    <span>Upiši svoj e-mail u <b>Postavke → Prijava</b>. Bez njega ne možeš sam postaviti novu lozinku ako je zaboraviš.</span>
+    <button class="gumb mali" id="otvoriPostavke">Otvori postavke</button>
+  </div>
   <div class="greske" id="greske" hidden></div>
 
   <section class="karta">
@@ -103,10 +107,12 @@
         <div class="redak"><button class="gumb mali" id="noviKljuc">Novi ključ</button></div>
       </div>
       <div>
-        <h3>Lozinka</h3>
+        <h3>Prijava</h3>
+        <label class="polje">E-mail (korisničko ime, na njega stiže reset lozinke)<input type="email" id="email" autocomplete="username"></label>
         <label class="polje">Trenutna lozinka<input type="password" id="staraLozinka" autocomplete="current-password"></label>
         <label class="polje">Nova lozinka (barem 10 znakova)<input type="password" id="novaLozinka" autocomplete="new-password"></label>
         <div class="redak">
+          <button class="gumb mali" id="promijeniEmail">Spremi e-mail</button>
           <button class="gumb mali" id="promijeniLozinku">Promijeni lozinku</button>
           <button class="gumb mali" id="odjava">Odjava</button>
         </div>
@@ -269,6 +275,8 @@ function iscrtajPostavke() {
   $('#danaArhive').value = podaci.danaArhive || 30;
   $('#separatorVremena').value = podaci.separatorVremena || ':';
   $('#automatskoAzuriranje').checked = !!sustav.automatskoAzuriranje;
+  $('#email').value = sustav.email || '';
+  $('#bezEmaila').hidden = !!sustav.email;
 }
 
 function iducaDatoteka() {
@@ -444,6 +452,21 @@ $('#promijeniLozinku').addEventListener('click', async () => {
     $('#staraLozinka').value = $('#novaLozinka').value = '';
     poruka('Lozinka je promijenjena.');
   } catch (e) { poruka('Greška: ' + e.message); }
+});
+$('#promijeniEmail').addEventListener('click', async () => {
+  try {
+    const r = await api('email', { lozinka: $('#staraLozinka').value, email: $('#email').value });
+    if (!r.ok) return poruka(r.greska);
+    sustav = r.sustav;
+    $('#staraLozinka').value = '';
+    iscrtajPostavke();
+    poruka('E-mail je spremljen.');
+  } catch (e) { poruka('Greška: ' + e.message); }
+});
+$('#otvoriPostavke').addEventListener('click', () => {
+  $('#napredno').open = true;
+  $('#email').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  $('#email').focus();
 });
 $('#odjava').addEventListener('click', async () => { await api('odjava', {}); location.reload(); });
 

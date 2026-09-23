@@ -295,5 +295,131 @@ test('ažuriranje odbija zip bez plugina', function () {
     jednako(is_file($s->sustav('lib/Sustav.php')), true, 'stari kod ostaje');
 });
 
+/* ---------- Prijava i reset lozinke ---------- */
+
+function zahtjev(string $host = 'salonana.hr', string $ip = '10.0.0.1'): void
+{
+    $_SERVER['HTTP_HOST'] = $host;
+    $_SERVER['SCRIPT_NAME'] = '/cjenik/admin/index.php';
+    $_SERVER['HTTPS'] = 'on';
+    $_SERVER['REMOTE_ADDR'] = $ip;
+    $_SESSION = [];
+}
+
+test('instalacija traži ispravan e-mail i lozinku; e-mail je korisničko ime', function () {
+    $s = instalacija();
+    zahtjev();
+    $a = new Auth($s);
+    jednako($a->instaliraj('nije-email', 'dugacka-lozinka'), 'Upiši ispravnu e-mail adresu.');
+    jednako($a->instaliraj('ana@salonana.hr', 'kratka') !== null, true);
+    jednako($a->instaliraj(' Ana@SalonAna.hr ', 'dugacka-lozinka'), null);
+    jednako($a->email(), 'ana@salonana.hr');
+    jednako($s->postavke()['adresa'], 'https://salonana.hr/cjenik/admin/');
+    jednako($a->instaliraj('drugi@x.hr', 'dugacka-lozinka'), 'Plugin je već instaliran.');
+
+    zahtjev();
+    jednako($a->prijava('drugi@salonana.hr', 'dugacka-lozinka'), 'Pogrešan e-mail ili lozinka.');
+    jednako($a->prijava('ana@salonana.hr', 'kriva-lozinka'), 'Pogrešan e-mail ili lozinka.');
+    jednako($a->prijava('ANA@salonana.hr', 'dugacka-lozinka'), null);
+    jednako($a->prijavljen(), true);
+});
+
+test('previše pokušaja prijave blokira IP', function () {
+    $s = instalacija();
+    zahtjev();
+    $a = new Auth($s);
+    $a->instaliraj('ana@salonana.hr', 'dugacka-lozinka');
+    for ($i = 0; $i < Auth::MAKS_POKUSAJA; $i++) $a->prijava('ana@salonana.hr', 'krivo');
+    sadrzi((string) $a->prijava('ana@salonana.hr', 'dugacka-lozinka'), 'Previše');
+    zahtjev('salonana.hr', '10.0.0.2');
+    jednako($a->prijava('ana@salonana.hr', 'dugacka-lozinka'), null, 'drugi IP nije blokiran');
+});
+
+test('reset lozinke e-mailom: poveznica koristi spremljenu adresu, jednokratna je', function () {
+    $s = instalacija();
+    zahtjev();
+    $a = new Auth($s);
+    $a->instaliraj('ana@salonana.hr', 'stara-lozinka-1');
+    $poslano = [];
+    Auth::$posalji = function ($prima, $naslov, $tekst, $zaglavlja) use (&$poslano) {
+        $poslano[] = compact('prima', 'naslov', 'tekst', 'zaglavlja');
+        return true;
+    };
+
+    // Nepoznat e-mail: isti odgovor, ništa se ne šalje.
+    zahtjev('napadac.com');
+    jednako($a->zatraziReset('netko@drugi.hr'), null);
+    jednako(count($poslano), 0);
+
+    // Podmetnut Host ne završava u poveznici.
+    jednako($a->zatraziReset('Ana@salonana.hr'), null);
+    jednako(count($poslano), 1);
+    jednako($poslano[0]['prima'], 'ana@salonana.hr');
+    sadrzi($poslano[0]['tekst'], 'https://salonana.hr/cjenik/admin/?reset=');
+    jednako(strpos($poslano[0]['tekst'], 'napadac'), false);
+    sadrzi($poslano[0]['zaglavlja'], 'From: Cjenik <noreply@salonana.hr>');
+
+    // Ponovni zahtjev odmah ne šalje novi mail.
+    $a->zatraziReset('ana@salonana.hr');
+    jednako(count($poslano), 1);
+
+    preg_match('/reset=([a-f0-9]+)/', $poslano[0]['tekst'], $m);
+    $token = $m[1];
+    jednako($a->ispravanReset($token), true);
+    jednako($a->ispravanReset(str_repeat('0', strlen($token))), false);
+    jednako($a->postaviNovuLozinku($token, 'kratka') !== null, true);
+    jednako($a->postaviNovuLozinku($token, 'nova-lozinka-22'), null);
+    jednako($a->ispravanReset($token), false, 'jednokratna');
+    jednako($a->postaviNovuLozinku($token, 'treca-lozinka-33') !== null, true);
+
+    zahtjev();
+    jednako($a->prijava('ana@salonana.hr', 'stara-lozinka-1'), 'Pogrešan e-mail ili lozinka.');
+    jednako($a->prijava('ana@salonana.hr', 'nova-lozinka-22'), null);
+    Auth::$posalji = null;
+});
+
+test('reset poveznica istječe nakon sat vremena', function () {
+    $s = instalacija();
+    zahtjev();
+    $a = new Auth($s);
+    $a->instaliraj('ana@salonana.hr', 'stara-lozinka-1');
+    $tekst = '';
+    Auth::$posalji = function ($prima, $naslov, $t) use (&$tekst) { $tekst = $t; return true; };
+    $a->zatraziReset('ana@salonana.hr');
+    Auth::$posalji = null;
+    preg_match('/reset=([a-f0-9]+)/', $tekst, $m);
+    $p = $s->postavke();
+    $p['reset']['istjece'] = time() - 1;
+    $s->spremiPostavke($p);
+    jednako($a->ispravanReset($m[1]), false);
+    sadrzi((string) $a->postaviNovuLozinku($m[1], 'nova-lozinka-22'), 'istekla');
+});
+
+test('neuspjelo slanje e-maila javlja grešku i poništava poveznicu', function () {
+    $s = instalacija();
+    zahtjev();
+    $a = new Auth($s);
+    $a->instaliraj('ana@salonana.hr', 'stara-lozinka-1');
+    Auth::$posalji = function () { return false; };
+    sadrzi((string) $a->zatraziReset('ana@salonana.hr'), 'nije uspjelo');
+    Auth::$posalji = null;
+    jednako(isset($s->postavke()['reset']), false);
+});
+
+test('promjena e-maila traži lozinku; stara instalacija bez e-maila radi', function () {
+    $s = instalacija();
+    zahtjev();
+    $a = new Auth($s);
+    $a->instaliraj('ana@salonana.hr', 'stara-lozinka-1');
+    jednako($a->promijeniEmail('kriva', 'nova@salonana.hr'), 'Lozinka nije točna.');
+    jednako($a->promijeniEmail('stara-lozinka-1', 'Nova@SalonAna.hr'), null);
+    jednako($a->email(), 'nova@salonana.hr');
+
+    $p = $s->postavke();
+    unset($p['email']);
+    $s->spremiPostavke($p);
+    jednako($a->prijava('', 'stara-lozinka-1'), null, 'v1.0.0 instalacija');
+});
+
 echo "\n$prolaz prošlo, $pad palo\n";
 exit($pad ? 1 : 0);

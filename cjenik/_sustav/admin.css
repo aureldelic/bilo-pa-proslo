@@ -23,7 +23,7 @@ main{max-width:1180px;margin:0 auto;padding:20px 16px 80px;display:grid;gap:18px
 .polja{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 16px}
 label.polje{display:grid;gap:4px;font-size:.82rem;color:var(--blago);font-weight:500;margin-bottom:12px}
 .polja label.polje{margin-bottom:0}
-input[type=text],input[type=date],input[type=password],input[type=number],select,textarea{width:100%;padding:8px 10px;border:1px solid var(--rub-jak);border-radius:8px;background:var(--povrsina);min-width:0}
+input[type=text],input[type=email],input[type=date],input[type=password],input[type=number],select,textarea{width:100%;padding:8px 10px;border:1px solid var(--rub-jak);border-radius:8px;background:var(--povrsina);min-width:0}
 textarea{resize:vertical;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace}
 input:focus,select:focus,textarea:focus{outline:2px solid var(--akcent);outline-offset:-1px;border-color:transparent}
 input.krivo{border-color:var(--greska);background:var(--greska-blago)}
@@ -107,3 +107,7 @@ details.karta summary small{font-weight:400;color:var(--blago);font-size:.82rem}
 .obrazac{width:min(400px,100%);padding:28px}
 .obrazac h1{font-size:1.25rem;margin:0 0 12px}
 .obrazac .gumb{width:100%;justify-content:center;margin-top:4px}
+.obrazac input[type=email]{width:100%;padding:8px 10px;border:1px solid var(--rub-jak);border-radius:8px;background:var(--povrsina)}
+.uspjeh{background:var(--akcent-blago);color:var(--tekst);border-radius:8px;padding:10px 12px;font-size:.9rem}
+.donja-poveznica{text-align:center;font-size:.88rem;margin:16px 0 0}
+.donja-poveznica a{color:var(--blago)}

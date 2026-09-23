@@ -13,15 +13,15 @@ Sve radi na hostingu stranice. Klijent se prijavi u preglednik, upiše usluge i 
 ## Instalacija (jednom po stranici)
 
 1. Preuzmi `cjenik.zip` iz [zadnjeg izdanja](../../releases/latest) i raspakiraj mapu `cjenik/` u korijen web stranice, tako da postoji `https://stranica.hr/cjenik/admin/`.
-2. **Odmah** otvori `https://stranica.hr/cjenik/admin/` i postavi lozinku. Dok lozinka nije postavljena, može je postaviti bilo tko tko otvori tu adresu.
-3. Lozinku daj klijentu.
+2. **Odmah** otvori `https://stranica.hr/cjenik/admin/` i upiši **e-mail i lozinku klijenta**. Dok to nije napravljeno, pristup može preuzeti bilo tko tko otvori tu adresu. E-mail je korisničko ime, a na njega stiže poveznica za novu lozinku.
+3. Pristupne podatke daj klijentu. Klijent može sam promijeniti i e-mail i lozinku u *Postavke → Prijava*.
 4. Po želji u *Postavke → Tablica na stranicama weba* upiši HTML stranice u koje se tablica umeće (vidi niže).
 
 Na instalacijskom ekranu plugin javlja ako ne može pisati u svoje mape.
 
 ## Kako klijent radi
 
-Na adresi `https://stranica.hr/cjenik/admin/` se prijavi lozinkom i uredi:
+Na adresi `https://stranica.hr/cjenik/admin/` se prijavi e-mailom i lozinkom i uredi:
 
 - **Obrt i objekt:** naziv, oblik objekta (salon, servis, ured…), adresa i oznaka. Ti podaci ulaze u naziv datoteke.
 - **Usluge:** opis, trenutna cijena i cijena na 10.9.2026. Kad se upiše trenutna cijena, sidrena se predloži sama. Neobavezno se dodaju kategorija, jedinica i akcija.
@@ -161,7 +161,17 @@ Struktura XML-a zasad nije propisana. Ako ministarstvo objavi shemu, mijenja se 
 
 ## Zaboravljena lozinka
 
-Preko FTP-a obriši `cjenik/_podaci/postavke.php` i ponovno otvori `/cjenik/admin/` da postaviš novu lozinku. Cijene i arhiva ostaju. Pritom se generira i novi ključ za daljinsko ažuriranje.
+Na ekranu za prijavu je poveznica **Zaboravljena lozinka?**. Klijent upiše svoj e-mail i dobije poveznicu za novu lozinku.
+
+- Poveznica vrijedi **1 sat**, može se iskoristiti samo jednom i odjavljuje sve ostale prijave.
+- Odgovor na ekranu je uvijek isti, pa se ne može provjeriti koji je e-mail registriran.
+- Nova poveznica može se zatražiti najviše jednom u 5 minuta.
+- Adresa u poveznici je ona spremljena pri instalaciji i prijavi, a ne ona iz zahtjeva. Tako je nitko ne može preusmjeriti na svoju domenu.
+- Mail šalje PHP funkcija `mail()` s adrese `noreply@domena-stranice`. Drugi pošiljatelj upisuje se u `_podaci/postavke.php` (ključ `posiljatelj`). Ako hosting ne šalje mail, klijent dobije poruku da se javi webmasteru.
+
+**Ako ni to ne pomaže**, npr. nema pristupa e-mailu: preko FTP-a obriši `cjenik/_podaci/postavke.php` i ponovno otvori `/cjenik/admin/` za novu instalaciju. Cijene i arhiva ostaju; generira se i novi ključ za daljinsko ažuriranje.
+
+**Instalacije iz verzije 1.0.0** nemaju e-mail: prijava ide samo lozinkom, a sučelje traži da se e-mail upiše u postavke.
 
 ## Razvoj
 

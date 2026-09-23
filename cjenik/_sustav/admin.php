@@ -79,48 +79,103 @@ function stranica_obrasca(string $naslov, string $sadrzaj): void
     exit;
 }
 
+$csrfPolje = function () use ($auth) {
+    return '<input type="hidden" name="csrf" value="' . $auth->csrf() . '">';
+};
+$poruke = function (array $greske, string $uspjeh = '') {
+    $h = '';
+    foreach ($greske as $g) if ($g) $h .= '<p class="greska">' . Util::esc($g) . '</p>';
+    if ($uspjeh !== '') $h .= '<p class="uspjeh">' . Util::esc($uspjeh) . '</p>';
+    return $h;
+};
+$poljeEmail = function (string $vrijednost = '', bool $fokus = true) {
+    return '<label class="polje">E-mail<input type="email" name="email" autocomplete="username" required value="'
+        . Util::esc($vrijednost) . '"' . ($fokus ? ' autofocus' : '') . '></label>';
+};
+
+/* Instalacija: e-mail (korisničko ime) i lozinka. */
 if (!$auth->instalirano()) {
     $greska = '';
     $dozvole = $s->provjeraDozvola();
+    $email = (string) ($_POST['email'] ?? '');
     if ($metoda === 'POST' && !$dozvole) {
         $l = (string) ($_POST['lozinka'] ?? '');
         if (!$auth->provjeriCsrf($_POST['csrf'] ?? null)) $greska = 'Istekla sesija, pokušaj ponovno.';
-        elseif (strlen($l) < 10) $greska = 'Lozinka mora imati barem 10 znakova.';
         elseif ($l !== ($_POST['lozinka2'] ?? '')) $greska = 'Lozinke se ne podudaraju.';
-        else {
-            $auth->instaliraj($l);
+        elseif (($greska = $auth->instaliraj($email, $l)) === null) {
             header('Location: ./');
             exit;
         }
     }
-    $html = '<p class="opis">Postavi lozinku za uređivanje cjenika. Nakon toga samo osoba s lozinkom može mijenjati cijene.</p>';
-    foreach ($dozvole as $d) $html .= '<p class="greska">' . Util::esc($d) . '</p>';
-    if ($greska) $html .= '<p class="greska">' . Util::esc($greska) . '</p>';
-    $html .= '<form method="post"><input type="hidden" name="csrf" value="' . $auth->csrf() . '">'
-        . '<label class="polje">Nova lozinka (barem 10 znakova)<input type="password" name="lozinka" autocomplete="new-password" required minlength="10" autofocus></label>'
+    stranica_obrasca('Instalacija cjenika',
+        '<p class="opis">Upiši e-mail i lozinku za uređivanje cjenika. E-mail je korisničko ime i na njega stiže poveznica ako zaboraviš lozinku.</p>'
+        . $poruke(array_merge($dozvole, [$greska]))
+        . '<form method="post">' . $csrfPolje() . $poljeEmail($email)
+        . '<label class="polje">Lozinka (barem 10 znakova)<input type="password" name="lozinka" autocomplete="new-password" required minlength="10"></label>'
         . '<label class="polje">Ponovi lozinku<input type="password" name="lozinka2" autocomplete="new-password" required minlength="10"></label>'
-        . '<button class="gumb glavni" type="submit"' . ($dozvole ? ' disabled' : '') . '>Postavi lozinku</button></form>';
-    stranica_obrasca('Instalacija cjenika', $html);
+        . '<button class="gumb glavni" type="submit"' . ($dozvole ? ' disabled' : '') . '>Spremi i nastavi</button></form>');
 }
 
+/* Postavljanje nove lozinke preko poveznice iz e-maila. */
+if (isset($_GET['reset']) && !$api) {
+    $token = preg_replace('/[^a-f0-9]/', '', (string) $_GET['reset']);
+    $greska = '';
+    if ($metoda === 'POST') {
+        $l = (string) ($_POST['lozinka'] ?? '');
+        if (!$auth->provjeriCsrf($_POST['csrf'] ?? null)) $greska = 'Istekla sesija, pokušaj ponovno.';
+        elseif ($l !== ($_POST['lozinka2'] ?? '')) $greska = 'Lozinke se ne podudaraju.';
+        elseif (($greska = $auth->postaviNovuLozinku($token, $l)) === null) {
+            header('Location: ./');
+            exit;
+        }
+    }
+    if (!$auth->ispravanReset($token)) {
+        stranica_obrasca('Nova lozinka', $poruke(['Poveznica je istekla ili je već iskorištena.'])
+            . '<p><a class="gumb" href="./?zaboravljena">Zatraži novu poveznicu</a></p>');
+    }
+    stranica_obrasca('Nova lozinka', $poruke([$greska])
+        . '<form method="post">' . $csrfPolje()
+        . '<input type="email" name="email" autocomplete="username" value="' . Util::esc($auth->email()) . '" hidden>'
+        . '<label class="polje">Nova lozinka (barem 10 znakova)<input type="password" name="lozinka" autocomplete="new-password" required minlength="10" autofocus></label>'
+        . '<label class="polje">Ponovi lozinku<input type="password" name="lozinka2" autocomplete="new-password" required minlength="10"></label>'
+        . '<button class="gumb glavni" type="submit">Spremi novu lozinku</button></form>');
+}
+
+/* Zaboravljena lozinka: zahtjev za poveznicu. */
+if (isset($_GET['zaboravljena']) && !$api) {
+    $greska = '';
+    $uspjeh = '';
+    if ($metoda === 'POST') {
+        if (!$auth->provjeriCsrf($_POST['csrf'] ?? null)) $greska = 'Istekla sesija, pokušaj ponovno.';
+        elseif (($greska = $auth->zatraziReset((string) ($_POST['email'] ?? ''))) === null) {
+            $uspjeh = 'Ako je e-mail ispravan, na njega je poslana poveznica za novu lozinku. Provjeri i neželjenu poštu (spam).';
+        }
+    }
+    stranica_obrasca('Zaboravljena lozinka', $poruke([$greska], $uspjeh)
+        . ($uspjeh ? '' : '<p class="opis">Upiši e-mail s kojim se prijavljuješ. Poslat ćemo poveznicu za novu lozinku.</p>'
+            . '<form method="post">' . $csrfPolje() . $poljeEmail((string) ($_POST['email'] ?? ''))
+            . '<button class="gumb glavni" type="submit">Pošalji poveznicu</button></form>')
+        . '<p class="donja-poveznica"><a href="./">← Natrag na prijavu</a></p>');
+}
+
+/* Prijava. */
 if (!$auth->prijavljen()) {
     if ($api) json_odgovor(401, ['greska' => 'Prijava je istekla. Osvježi stranicu.']);
     $greska = '';
+    $email = (string) ($_POST['email'] ?? '');
+    $imaEmail = $auth->email() !== '';
     if ($metoda === 'POST') {
         if (!$auth->provjeriCsrf($_POST['csrf'] ?? null)) $greska = 'Istekla sesija, pokušaj ponovno.';
-        else {
-            $greska = $auth->prijava((string) ($_POST['lozinka'] ?? ''));
-            if ($greska === null) {
-                header('Location: ./');
-                exit;
-            }
+        elseif (($greska = $auth->prijava($email, (string) ($_POST['lozinka'] ?? ''))) === null) {
+            header('Location: ./');
+            exit;
         }
     }
-    $html = ($greska ? '<p class="greska">' . Util::esc($greska) . '</p>' : '')
-        . '<form method="post"><input type="hidden" name="csrf" value="' . $auth->csrf() . '">'
-        . '<label class="polje">Lozinka<input type="password" name="lozinka" autocomplete="current-password" required autofocus></label>'
-        . '<button class="gumb glavni" type="submit">Prijava</button></form>';
-    stranica_obrasca('Cjenik: prijava', $html);
+    stranica_obrasca('Cjenik: prijava', $poruke([$greska])
+        . '<form method="post">' . $csrfPolje() . ($imaEmail ? $poljeEmail($email) : '')
+        . '<label class="polje">Lozinka<input type="password" name="lozinka" autocomplete="current-password" required' . ($imaEmail ? '' : ' autofocus') . '></label>'
+        . '<button class="gumb glavni" type="submit">Prijava</button></form>'
+        . ($imaEmail ? '<p class="donja-poveznica"><a href="./?zaboravljena">Zaboravljena lozinka?</a></p>' : ''));
 }
 
 /* ---------- API (prijavljen korisnik) ---------- */
@@ -144,6 +199,7 @@ function stanje(Sustav $s): array
             'verzija' => $s->verzija(),
             'automatskoAzuriranje' => !empty($post['automatskoAzuriranje']),
             'kljucAzuriranja' => $post['kljucAzuriranja'] ?? '',
+            'email' => $post['email'] ?? '',
             'php' => PHP_VERSION,
         ],
     ];
@@ -218,6 +274,11 @@ if ($api) {
                 $b = tijelo();
                 $g = $auth->promijeniLozinku((string) ($b['stara'] ?? ''), (string) ($b['nova'] ?? ''));
                 json_odgovor($g ? 422 : 200, $g ? ['greska' => $g] : ['ok' => true]);
+
+            case 'email':
+                $b = tijelo();
+                $g = $auth->promijeniEmail((string) ($b['lozinka'] ?? ''), (string) ($b['email'] ?? ''));
+                json_odgovor($g ? 422 : 200, $g ? ['greska' => $g] : stanje($s));
 
             case 'odjava':
                 $auth->odjava();
