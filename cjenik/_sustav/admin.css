@@ -125,7 +125,7 @@ details.upute p{margin:8px 0;color:var(--blago)}
 .podnozje{max-width:1180px;margin:0 auto;padding:8px 16px 32px;display:flex;gap:16px;align-items:center;justify-content:center;flex-wrap:wrap;font-size:.8rem;color:var(--blago)}
 .autor{display:inline-flex;align-items:center;gap:8px;color:var(--blago);text-decoration:none;border-radius:6px;padding:4px 6px}
 .autor:hover{color:var(--tekst)}
-.autor svg{width:26px;height:26px;border-radius:4px;display:block}
+.autor svg{width:26px;height:26px;display:block}
 .verzija-podnozje{opacity:.8}
 .tema-prekidac{border:1px solid var(--rub-jak);background:var(--povrsina);color:var(--tekst);width:36px;height:34px;border-radius:8px;cursor:pointer;display:inline-grid;place-items:center;padding:0}
 .tema-prekidac:hover{border-color:var(--blago)}
