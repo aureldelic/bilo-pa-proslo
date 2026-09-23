@@ -89,6 +89,18 @@ test('parsiranje iznosa', function () {
 test('prikaz iznosa i datuma', function () {
     jednako(Util::novac(1234.5), "1.234,50\u{00A0}€");
     jednako(Util::datumKratko('2026-09-10'), '10.9.2026.');
+    jednako(Util::datumVrijemePrikaz('2026-10-01T05:45:00Z'), '1.10.2026. u 07:45');
+});
+
+test('datum sidrenja: unos 10.9.2026. postaje ISO, neispravan se odbija', function () {
+    jednako(Podaci::datumIso('10.9.2026.'), '2026-09-10');
+    jednako(Podaci::datumIso(' 1.10.2026 '), '2026-10-01');
+    jednako(Podaci::datumIso('2026-09-10'), '2026-09-10');
+    $p = Podaci::normaliziraj(['obveznik' => ['naziv' => 'x'], 'objekt' => ['oblik' => 's', 'adresa' => 'a', 'oznaka' => '1'],
+        'stavke' => [['naziv' => 'A', 'cijena' => 1, 'sidrenaCijena' => 1, 'datumSidrenja' => '31.2.2026.']]]);
+    jednako(count(Podaci::provjeri($p)), 1);
+    jednako(Podaci::provjeri(Podaci::normaliziraj(['obveznik' => ['naziv' => 'x'], 'objekt' => ['oblik' => 's', 'adresa' => 'a', 'oznaka' => '1'],
+        'stavke' => [['naziv' => 'A', 'cijena' => 1, 'sidrenaCijena' => 1, 'datumSidrenja' => '2026-02-31']]])) !== [], true);
 });
 
 test('arhiva: jedna stara objava bez promjena ostaje', function () use ($pocetak) {

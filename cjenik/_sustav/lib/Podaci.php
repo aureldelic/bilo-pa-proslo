@@ -105,12 +105,23 @@ final class Podaci
             $s['jedinica'] = self::tekst($s['jedinica'], 80);
             $s['cijena'] = Util::parsirajIznos($s['cijena']);
             $s['sidrenaCijena'] = Util::parsirajIznos($s['sidrenaCijena']);
-            $s['datumSidrenja'] = (string) $s['datumSidrenja'];
+            $s['datumSidrenja'] = self::datumIso((string) $s['datumSidrenja']);
             $s['akcija']['naziv'] = self::tekst($s['akcija']['naziv'], 120);
             $s['akcija']['najniza30'] = Util::parsirajIznos($s['akcija']['najniza30']);
             return $s;
         }, array_values((array) $p['stavke']));
         return $p;
+    }
+
+    /** '10.9.2026.' ili '2026-09-10' -> '2026-09-10'; neispravno ostaje kakvo jest (provjera javi grešku). */
+    public static function datumIso(string $v): string
+    {
+        $v = trim($v);
+        if (preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $v, $m)) return checkdate((int) $m[2], (int) $m[3], (int) $m[1]) ? $v : $v . '!';
+        if (preg_match('/^(\d{1,2})\s*[.\/-]\s*(\d{1,2})\s*[.\/-]\s*(\d{4})\s*\.?$/', $v, $m) && checkdate((int) $m[2], (int) $m[1], (int) $m[3])) {
+            return sprintf('%04d-%02d-%02d', $m[3], $m[2], $m[1]);
+        }
+        return $v;
     }
 
     private static function neispravan($n): bool
@@ -133,7 +144,7 @@ final class Podaci
             if ($s['naziv'] === '') $g[] = "$r: nedostaje opis usluge.";
             if (self::neispravan($s['cijena'])) $g[] = "$r: neispravna trenutna cijena.";
             if (self::neispravan($s['sidrenaCijena'])) $g[] = "$r: neispravna cijena na datum sidrenja.";
-            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $s['datumSidrenja'])) $g[] = "$r: neispravan datum sidrenja.";
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $s['datumSidrenja'])) $g[] = "$r: neispravan datum sidrenja (upiši npr. 10.9.2026.).";
             if ($s['akcija']['aktivna'] && $s['akcija']['naziv'] === '') $g[] = "$r: upiši naziv posebnog oblika prodaje (npr. \"Jesenska akcija\").";
             $n = $s['akcija']['najniza30'];
             if (is_float($n) && is_nan($n)) $g[] = "$r: neispravna najniža cijena u 30 dana.";

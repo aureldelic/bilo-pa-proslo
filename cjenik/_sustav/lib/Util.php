@@ -54,10 +54,10 @@ final class Util
         return ((int) $d) . '.' . ((int) $m) . '.' . $y . '.';
     }
 
-    /** '01.10.2026. u 07:45' */
+    /** '1.10.2026. u 07:45' */
     public static function datumVrijemePrikaz($d): string
     {
-        return self::datum($d)->format('d.m.Y. \u H:i');
+        return self::datum($d)->format('j.n.Y. \u H:i');
     }
 
     public static function novac($n): string
