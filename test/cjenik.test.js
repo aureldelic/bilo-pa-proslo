@@ -27,12 +27,12 @@ const arhiva = (dir) => fs.readdirSync(path.join(dir, 'cjenik', 'arhiva')).sort(
 
 test('naziv datoteke prati primjer ministarstva', () => {
   const p = normaliziraj({ ...zadano(), separatorVremena: ':', objekt: { oblik: 'servis', adresa: 'Vukovarska 20 Osijek', oznaka: 'U-03' } });
-  assert.equal(nazivDatoteke(p, 15, pocetak, 'xml'), 'servis_Vukovarska 20 Osijek_U-03_015_01.10.2026_07:45.xml');
+  assert.equal(nazivDatoteke(p, 15, pocetak, 'xml'), 'servis_Vukovarska_20_Osijek_U-03_015_01.10.2026_07:45.xml');
 });
 
-test('naziv datoteke čisti znakove koji bi pokvarili strukturu', () => {
+test('naziv datoteke bez razmaka, nedopušteni znakovi postaju crtica', () => {
   const p = normaliziraj({ ...zadano(), separatorVremena: '-', objekt: { oblik: 'salon', adresa: 'Ilica 150/2_Zagreb', oznaka: 'P_01' } });
-  assert.equal(nazivDatoteke(p, 1, pocetak, 'xml'), 'salon_Ilica 150-2-Zagreb_P-01_001_01.10.2026_07-45.xml');
+  assert.equal(nazivDatoteke(p, 1, pocetak, 'xml'), 'salon_Ilica_150-2_Zagreb_P_01_001_01.10.2026_07-45.xml');
 });
 
 test('ISO datum s lokalnim pomakom (ljetno i zimsko vrijeme)', () => {
@@ -76,7 +76,7 @@ test('objava: nova datoteka samo kad se cijena promijeni', () => {
   const dir = projekt();
   const r1 = objavi(dir, ucitaj(dir), { sada: pocetak });
   assert.equal(r1.nova.broj, 1);
-  assert.deepEqual(arhiva(dir), ['servis_Vukovarska 20 Osijek_U-03_001_01.10.2026_07:45.xml']);
+  assert.deepEqual(arhiva(dir), ['servis_Vukovarska_20_Osijek_U-03_001_01.10.2026_07:45.xml']);
 
   const r2 = objavi(dir, ucitaj(dir), { sada: new Date(+pocetak + DAN) });
   assert.equal(r2.nova, null);

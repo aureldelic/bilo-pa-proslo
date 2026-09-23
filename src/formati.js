@@ -5,12 +5,14 @@
 
 import { dijelovi, isoLokalno, iznos } from './util.js';
 
-const cistiDio = (s) => String(s).replace(/[\\/_:*?"<>|]+/g, '-').replace(/\s+/g, ' ').trim();
+// Razmaci postaju '_' (npr. 'Vukovarska 20 Osijek' -> 'Vukovarska_20_Osijek'),
+// a znakovi koji ne smiju u naziv datoteke postaju '-'.
+const cistiDio = (s) => String(s).trim().replace(/[\\/:*?"<>|]+/g, '-').replace(/[\s_]+/g, '_');
 
 /**
  * Naziv prema pojašnjenju ministarstva:
  * oblik_adresa_oznaka_broj pohrane_DD.MM.GGGG_HH:MM
- * npr. servis_Vukovarska 20 Osijek_U-03_015_01.10.2026_07:45
+ * npr. servis_Vukovarska_20_Osijek_U-03_015_01.10.2026_07:45
  */
 export function nazivDatoteke(podaci, broj, datum, nastavak) {
   const d = dijelovi(datum);
