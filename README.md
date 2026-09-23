@@ -1,5 +1,9 @@
 # Cjenik sa sidrenim cijenama (PHP plugin za web stranice)
 
+<a href="https://block.hr"><img src="docs/block-logo.svg" alt="BLOCK" width="56" align="right"></a>
+
+Autor: **[BLOCK](https://block.hr)**, web stranice po mjeri i privatni hosting.
+
 Plugin za objavu cjenika usluga prema odlukama iz NN 101/26 koje vrijede od 1. listopada 2026.:
 
 - **dodatna (sidrena) cijena** na dan 10. rujna 2026. uz trenutnu cijenu, u istoj tablici,

@@ -145,6 +145,14 @@ function podaciPoste(Sustav $s): array
     ];
 }
 
+/** Potpis autora: logo i poveznica na block.hr. */
+function autor(): string
+{
+    $logo = file_get_contents(__DIR__ . '/block-logo.svg');
+    return '<a class="autor" href="https://block.hr" target="_blank" rel="noopener" title="BLOCK: web stranice po mjeri i privatni hosting">'
+        . '<span>Izradio</span>' . $logo . '<span>block.hr</span></a>';
+}
+
 /** HTML upozorenje ako su podaci javno dostupni (ili provjera nije moguća). */
 function upozorenjeZastite(array $r): string
 {
@@ -165,7 +173,8 @@ function stranica_obrasca(string $naslov, string $sadrzaj): void
     $css = file_get_contents(__DIR__ . '/admin.css');
     echo "<!doctype html><html lang=\"hr\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
         . '<meta name="robots" content="noindex"><title>' . Util::esc($naslov) . "</title><style>$css</style></head>"
-        . '<body class="obrazac-tijelo"><main class="obrazac karta"><h1>' . Util::esc($naslov) . "</h1>$sadrzaj</main></body></html>";
+        . '<body class="obrazac-tijelo"><div class="obrazac-okvir"><main class="obrazac karta"><h1>' . Util::esc($naslov) . "</h1>$sadrzaj</main>"
+        . '<footer class="podnozje">' . autor() . '</footer></div></body></html>';
     exit;
 }
 
@@ -482,4 +491,5 @@ echo strtr(file_get_contents(__DIR__ . '/admin.html'), [
     '{{CSS}}' => file_get_contents(__DIR__ . '/admin.css'),
     '{{CSRF}}' => $auth->csrf(),
     '{{VERZIJA}}' => Util::esc($s->verzija()),
+    '{{AUTOR}}' => autor(),
 ]);
