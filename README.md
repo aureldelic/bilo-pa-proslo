@@ -14,9 +14,25 @@ Sve radi na hostingu stranice. Klijent se prijavi u preglednik, upiše usluge i 
 
 **Zahtjevi:** PHP 7.4 ili noviji (radi na običnom shared hostingu) i PHP modul `zip` (za ažuriranje). Baza nije potrebna. Stranica može biti potpuno statična (HTML); PHP treba samo mapi `cjenik/`.
 
+## Preuzimanje
+
+**[⬇ Preuzmi cjenik.zip (zadnja verzija)](https://github.com/aureldelic/cjenik-sidrene-cijene/releases/latest/download/cjenik.zip)**
+
+```
+https://github.com/aureldelic/cjenik-sidrene-cijene/releases/latest/download/cjenik.zip
+```
+
+Adresa uvijek vodi na zadnju verziju. Na stranici izdanja uz `cjenik.zip` stoje i automatski paketi *Source code (zip / tar.gz)*. Oni sadrže cijeli repozitorij (testove, primjer) i **nisu za postavljanje na hosting**.
+
 ## Instalacija (jednom po stranici)
 
-1. Preuzmi `cjenik.zip` iz [zadnjeg izdanja](../../releases/latest) i raspakiraj mapu `cjenik/` u korijen web stranice, tako da postoji `https://stranica.hr/cjenik/admin/`.
+1. Prenesi `cjenik.zip` u korijen web stranice (`public_html`, `www`…) i raspakiraj ga, tako da nastane mapa `cjenik/` i postoji `https://stranica.hr/cjenik/admin/`.
+   - **cPanel / Plesk:** u File Manageru uploadaj zip, pa desni klik → *Extract*.
+   - **FTP:** raspakiraj na računalu i prenesi cijelu mapu `cjenik/`.
+   - **SSH:**
+     ```bash
+     cd public_html && curl -L -o cjenik.zip https://github.com/aureldelic/cjenik-sidrene-cijene/releases/latest/download/cjenik.zip && unzip cjenik.zip && rm cjenik.zip
+     ```
 2. **Odmah** otvori `https://stranica.hr/cjenik/admin/` i upiši **e-mail i lozinku klijenta**. Dok to nije napravljeno, pristup može preuzeti bilo tko tko otvori tu adresu. E-mail je korisničko ime, a na njega stiže poveznica za novu lozinku.
 3. **Drugi korak: slanje e-maila.** Plugin provjeri može li hosting slati mail preko PHP `mail()` i upozori ako ne može. Upiši SMTP podatke nekog sandučića (npr. `noreply@domena.hr`) i klikni *Spremi i pošalji testni e-mail*. Korak se može preskočiti. Ako hosting nema `mail()`, reset lozinke tada neće raditi dok se SMTP ne podesi.
 4. Pristupne podatke daj klijentu. Klijent može sam promijeniti i e-mail i lozinku u *Postavke → Prijava*.
