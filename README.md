@@ -117,12 +117,7 @@ echo "1.1.0" > cjenik/_sustav/VERZIJA
 git commit -am "Verzija 1.1.0" && git tag v1.1.0 && git push --follow-tags
 ```
 
-GitHub Action pokrene testove na PHP 7.4, napravi `cjenik.zip` i objavi izdanje. Workflow je zasad u `alati/github-workflow-izdanje.yml`; da proradi, premjesti ga u `.github/workflows/izdanje.yml` (push traži GitHub token s ovlasti `workflow`). Do tada se izdanje može objaviti ručno:
-
-```bash
-php tests/testovi.php && zip -r cjenik.zip cjenik -x 'cjenik/_podaci/*' 'cjenik/arhiva/*'
-gh release create v1.1.0 cjenik.zip --title v1.1.0 --generate-notes
-```
+GitHub Action pokrene testove na PHP 7.4, napravi `cjenik.zip` i objavi izdanje.
 
 Instalacije ga preuzimaju na tri načina:
 
