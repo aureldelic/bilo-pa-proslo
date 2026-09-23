@@ -62,7 +62,7 @@ final class Posta
     {
         $poruka = [
             'od' => self::posiljatelj($postavke),
-            'ime' => $postavke['smtp']['ime'] ?? 'Cjenik',
+            'ime' => $postavke['smtp']['ime'] ?? Util::NAZIV,
             'prima' => $prima,
             'naslov' => $naslov,
             'tekst' => $tekst,

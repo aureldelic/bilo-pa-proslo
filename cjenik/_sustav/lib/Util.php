@@ -5,6 +5,7 @@ namespace Cjenik;
 
 final class Util
 {
+    const NAZIV = 'Bilo pa prošlo';
     const ZONA = 'Europe/Zagreb';
     const DATUM_SIDRENJA = '2026-09-10';
 

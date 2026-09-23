@@ -1,4 +1,4 @@
-# Testovi na svaki push; na tag vX.Y.Z još i izdanje s cjenik.zip (iz njega se plugin ažurira).
+# Testovi na svaki push; na tag vX.Y.Z još i izdanje s bilo-pa-proslo.zip (iz njega se plugin ažurira).
 name: Izdanje
 
 on:
@@ -35,10 +35,10 @@ jobs:
 
       - name: Paket
         if: startsWith(github.ref, 'refs/tags/v') && matrix.php == '7.4'
-        run: zip -r cjenik.zip cjenik -x 'cjenik/_podaci/*' 'cjenik/arhiva/*'
+        run: zip -r bilo-pa-proslo.zip cjenik -x 'cjenik/_podaci/*' 'cjenik/arhiva/*'
 
       - name: Objavi izdanje
         if: startsWith(github.ref, 'refs/tags/v') && matrix.php == '7.4'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" cjenik.zip --title "$GITHUB_REF_NAME" --generate-notes
+        run: gh release create "$GITHUB_REF_NAME" bilo-pa-proslo.zip --title "$GITHUB_REF_NAME" --generate-notes

@@ -1,6 +1,10 @@
-# Cjenik sa sidrenim cijenama (PHP plugin za web stranice)
+<p align="center"><img src="docs/logo.webp" alt="Bilo pa prošlo" width="220"></p>
 
-<a href="https://block.hr"><img src="docs/block-logo.svg" alt="BLOCK" width="56" align="right"></a>
+# Bilo pa prošlo
+
+**Cjenik usluga sa sidrenim cijenama (10.9.2026.). PHP plugin za web stranice.**
+
+<a href="https://block.hr"><img src="docs/block-logo.svg" alt="BLOCK" width="40" align="right"></a>
 
 Autor: **[BLOCK](https://block.hr)**, web stranice po mjeri i privatni hosting.
 
@@ -16,22 +20,22 @@ Sve radi na hostingu stranice. Klijent se prijavi u preglednik, upiše usluge i 
 
 ## Preuzimanje
 
-**[⬇ Preuzmi cjenik.zip (zadnja verzija)](https://github.com/aureldelic/cjenik-sidrene-cijene/releases/latest/download/cjenik.zip)**
+**[⬇ Preuzmi Bilo pa prošlo (zadnja verzija)](https://github.com/aureldelic/bilo-pa-proslo/releases/latest/download/bilo-pa-proslo.zip)**
 
 ```
-https://github.com/aureldelic/cjenik-sidrene-cijene/releases/latest/download/cjenik.zip
+https://github.com/aureldelic/bilo-pa-proslo/releases/latest/download/bilo-pa-proslo.zip
 ```
 
-Adresa uvijek vodi na zadnju verziju. Na stranici izdanja uz `cjenik.zip` stoje i automatski paketi *Source code (zip / tar.gz)*. Oni sadrže cijeli repozitorij (testove, primjer) i **nisu za postavljanje na hosting**.
+Adresa uvijek vodi na zadnju verziju. Na stranici izdanja uz `bilo-pa-proslo.zip` stoje i automatski paketi *Source code (zip / tar.gz)*. Oni sadrže cijeli repozitorij (testove, primjer) i **nisu za postavljanje na hosting**.
 
 ## Instalacija (jednom po stranici)
 
-1. Prenesi `cjenik.zip` u korijen web stranice (`public_html`, `www`…) i raspakiraj ga, tako da nastane mapa `cjenik/` i postoji `https://stranica.hr/cjenik/admin/`.
+1. Prenesi `bilo-pa-proslo.zip` u korijen web stranice (`public_html`, `www`…) i raspakiraj ga, tako da nastane mapa `cjenik/` i postoji `https://stranica.hr/cjenik/admin/`.
    - **cPanel / Plesk:** u File Manageru uploadaj zip, pa desni klik → *Extract*.
    - **FTP:** raspakiraj na računalu i prenesi cijelu mapu `cjenik/`.
    - **SSH:**
      ```bash
-     cd public_html && curl -L -o cjenik.zip https://github.com/aureldelic/cjenik-sidrene-cijene/releases/latest/download/cjenik.zip && unzip cjenik.zip && rm cjenik.zip
+     cd public_html && curl -L -o bilo-pa-proslo.zip https://github.com/aureldelic/bilo-pa-proslo/releases/latest/download/bilo-pa-proslo.zip && unzip bilo-pa-proslo.zip && rm bilo-pa-proslo.zip
      ```
 2. **Odmah** otvori `https://stranica.hr/cjenik/admin/` i upiši **e-mail i lozinku klijenta**. Dok to nije napravljeno, pristup može preuzeti bilo tko tko otvori tu adresu. E-mail je korisničko ime, a na njega stiže poveznica za novu lozinku.
 3. **Drugi korak: slanje e-maila.** Plugin provjeri može li hosting slati mail preko PHP `mail()` i upozori ako ne može. Upiši SMTP podatke nekog sandučića (npr. `noreply@domena.hr`) i klikni *Spremi i pošalji testni e-mail*. Korak se može preskočiti. Ako hosting nema `mail()`, reset lozinke tada neće raditi dok se SMTP ne podesi.
@@ -142,7 +146,7 @@ echo "1.0.2" > cjenik/_sustav/VERZIJA
 git commit -am "Verzija 1.0.2" && git tag v1.0.2 && git push origin main v1.0.2
 ```
 
-GitHub Action pokrene testove na PHP 7.4, napravi `cjenik.zip` i objavi izdanje.
+GitHub Action pokrene testove na PHP 7.4, napravi `bilo-pa-proslo.zip` i objavi izdanje.
 
 Instalacije ga preuzimaju na tri načina:
 

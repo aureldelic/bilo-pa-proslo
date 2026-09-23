@@ -434,7 +434,7 @@ test('SMTP: prijava, pošiljatelj, primatelj i UTF-8 poruka', function () {
     [$port, $izlaz, $proces] = lazniSmtp();
     Posta::posaljiSmtp(
         ['host' => '127.0.0.1', 'port' => $port, 'sifriranje' => 'nema', 'korisnik' => 'noreply@salonana.hr', 'lozinka' => 'tajna'],
-        ['od' => 'noreply@salonana.hr', 'ime' => 'Cjenik', 'prima' => "ana@salonana.hr\r\nBcc: zlo@x.hr", 'naslov' => 'Nova lozinka – čćžšđ',
+        ['od' => 'noreply@salonana.hr', 'ime' => 'Bilo pa prošlo', 'prima' => "ana@salonana.hr\r\nBcc: zlo@x.hr", 'naslov' => 'Nova lozinka – čćžšđ',
          'tekst' => "Pozdrav\n.\nčćžšđ", 'domena' => 'salonana.hr']
     );
     proc_close($proces);

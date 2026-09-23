@@ -1,7 +1,7 @@
 <?php
 // Ažuriranje plugina s GitHuba.
 //
-// Provjerava zadnje izdanje (release) u repozitoriju, preuzima cjenik.zip i
+// Provjerava zadnje izdanje (release) u repozitoriju, preuzima bilo-pa-proslo.zip i
 // zamjenjuje mapu _sustav (i datoteke u admin/). Podaci u _podaci/ i objavljeni
 // cjenici se ne diraju. Zamjena je atomska: nova verzija se raspakira pokraj stare
 // i tek kad je potpuna, mape se zamijene preimenovanjem.
@@ -31,7 +31,7 @@ final class Azuriranje
 
     private function http(string $url, array $zaglavlja = [], ?string $uDatoteku = null): string
     {
-        $zaglavlja[] = 'User-Agent: cjenik-sidrene-cijene/' . $this->s->verzija();
+        $zaglavlja[] = 'User-Agent: bilo-pa-proslo/' . $this->s->verzija();
         if ($this->konf['token'] !== '') $zaglavlja[] = 'Authorization: Bearer ' . $this->konf['token'];
 
         if (function_exists('curl_init')) {
@@ -87,7 +87,7 @@ final class Azuriranje
         if (!is_array($j) || empty($j['tag_name'])) throw new \RuntimeException('Neispravan odgovor GitHuba');
 
         $zip = null;
-        foreach ($j['assets'] ?? [] as $a) if (($a['name'] ?? '') === 'cjenik.zip') $zip = $a['url'];
+        foreach ($j['assets'] ?? [] as $a) if (($a['name'] ?? '') === 'bilo-pa-proslo.zip') $zip = $a['url'];
         $c = [
             'vrijeme' => time(),
             'izvor' => $this->konf['repozitorij'],

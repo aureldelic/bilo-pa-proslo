@@ -142,3 +142,7 @@ html[data-tema="tamna"] #pregled{background:#1d1d1b;color:#eeece6}
 .tooltip::before{content:"";position:absolute;top:-5px;right:13px;width:10px;height:10px;background:inherit;transform:rotate(45deg)}
 .tema-omot:hover .tooltip,.tema-prekidac:focus-visible+.tooltip{opacity:1;visibility:visible;transform:none}
 @media (hover:none){.tooltip{display:none}}
+.marka{display:flex;align-items:center;gap:10px}
+.marka img{width:40px;height:40px;margin:-6px 0;object-fit:contain}
+.logo-veliki{width:200px;height:auto;margin:0 auto 8px;display:block}
+@media (max-width:520px){.logo-veliki{width:150px}}

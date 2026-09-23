@@ -97,7 +97,7 @@ function spremiSmtp(Sustav $s, array $b): ?string
         'korisnik' => $korisnik,
         'lozinka' => $lozinka !== '' ? $lozinka : (($stari['host'] ?? '') !== '' ? ($stari['lozinka'] ?? '') : ''),
         'posiljatelj' => $posiljatelj,
-        'ime' => 'Cjenik',
+        'ime' => Util::NAZIV,
     ];
     $s->spremiPostavke($post);
     return null;
@@ -116,7 +116,7 @@ function testniMail(Sustav $s): ?string
             if (Posta::$prijevoz) {
                 Posta::posalji($post, $prima, "Testni e-mail s cjenika ($domena)", $tekst);
             } else {
-                Posta::posaljiSmtp($smtp, ['od' => Posta::posiljatelj($post), 'ime' => 'Cjenik', 'prima' => $prima,
+                Posta::posaljiSmtp($smtp, ['od' => Posta::posiljatelj($post), 'ime' => Util::NAZIV, 'prima' => $prima,
                     'naslov' => "Testni e-mail s cjenika ($domena)", 'tekst' => $tekst, 'domena' => $domena]);
             }
         } else {
@@ -173,8 +173,9 @@ function stranica_obrasca(string $naslov, string $sadrzaj): void
     $css = file_get_contents(__DIR__ . '/admin.css');
     $tema = (new Sustav(dirname(__DIR__)))->objavljeno()['tema'] === 'tamna' ? 'tamna' : 'svijetla';
     echo "<!doctype html><html lang=\"hr\" data-tema=\"$tema\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
-        . '<meta name="robots" content="noindex"><title>' . Util::esc($naslov) . "</title><style>$css</style></head>"
-        . '<body class="obrazac-tijelo"><div class="obrazac-okvir"><main class="obrazac karta"><h1>' . Util::esc($naslov) . "</h1>$sadrzaj</main>"
+        . '<meta name="robots" content="noindex"><title>' . Util::esc($naslov) . ' · ' . Util::NAZIV . '</title>'
+        . '<link rel="icon" type="image/png" href="favicon.png">' . "<style>$css</style></head>"
+        . '<body class="obrazac-tijelo"><div class="obrazac-okvir"><img class="logo-veliki" src="logo.webp" width="220" height="220" alt="' . Util::NAZIV . '"><main class="obrazac karta"><h1>' . Util::esc($naslov) . "</h1>$sadrzaj</main>"
         . '<footer class="podnozje">' . autor() . '</footer></div></body></html>';
     exit;
 }
@@ -208,7 +209,7 @@ if (!$auth->instalirano()) {
         }
     }
     $zastita = $dozvole ? ['stanje' => 'ok'] : Sigurnost::provjeri($s, Auth::adresaIzZahtjeva());
-    stranica_obrasca('Instalacija cjenika',
+    stranica_obrasca('Instalacija',
         '<p class="korak">Korak 1 od 2</p>' . upozorenjeZastite($zastita)
         . '<p class="opis">Upiši e-mail i lozinku za uređivanje cjenika. E-mail je korisničko ime i na njega stiže poveznica ako zaboraviš lozinku.</p>'
         . $poruke(array_merge($dozvole, [$greska]))
@@ -273,7 +274,7 @@ if (!$auth->prijavljen()) {
             exit;
         }
     }
-    stranica_obrasca('Cjenik: prijava', $poruke([$greska])
+    stranica_obrasca('Prijava', $poruke([$greska])
         . '<form method="post">' . $csrfPolje() . ($imaEmail ? $poljeEmail($email) : '')
         . '<label class="polje">Lozinka<input type="password" name="lozinka" autocomplete="current-password" required' . ($imaEmail ? '' : ' autofocus') . '></label>'
         . '<button class="gumb glavni" type="submit">Prijava</button></form>'
