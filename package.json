@@ -1,0 +1,23 @@
+{
+  "name": "cjenik-sidrene-cijene",
+  "version": "1.0.0",
+  "description": "Cjenik usluga sa sidrenim cijenama (10.9.2026.) i strojno čitljivim XML/CSV arhivom za statične web stranice",
+  "type": "module",
+  "bin": {
+    "cjenik": "bin/cjenik.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "admin",
+    "assets"
+  ],
+  "scripts": {
+    "admin": "node bin/cjenik.js admin --dir primjer",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

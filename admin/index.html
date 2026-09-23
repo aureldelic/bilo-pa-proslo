@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="hr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Uređivanje cjenika</title>
+<style>
+:root{
+  --pozadina:#f6f5f2;--povrsina:#fff;--tekst:#1d1c1a;--blago:#6f6b63;--rub:#e3dfd6;--rub-jak:#cbc6bb;
+  --akcent:#1f5f4a;--akcent-tekst:#fff;--akcent-blago:#e5f0eb;--upozorenje:#9a5b00;--upozorenje-blago:#fdf1dc;
+  --greska:#b3261e;--greska-blago:#fbe9e7;--sjena:0 1px 2px rgba(0,0,0,.05),0 4px 16px rgba(0,0,0,.04);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --pozadina:#131312;--povrsina:#1c1c1a;--tekst:#ecebe6;--blago:#a29e95;--rub:#302e2a;--rub-jak:#45423c;
+  --akcent:#5fbf98;--akcent-tekst:#0d1f18;--akcent-blago:#1b2e27;--upozorenje:#f0b458;--upozorenje-blago:#2e2415;
+  --greska:#f2867d;--greska-blago:#331c1a;--sjena:none;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--pozadina);color:var(--tekst);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+.traka{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--pozadina) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--rub)}
+.traka-unutra{max-width:1180px;margin:0 auto;padding:12px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.traka h1{font-size:1.05rem;margin:0;margin-right:auto;letter-spacing:-.01em}
+.status{font-size:.82rem;padding:4px 10px;border-radius:999px;background:var(--akcent-blago);color:var(--akcent);font-weight:600;white-space:nowrap}
+.status.ceka{background:var(--upozorenje-blago);color:var(--upozorenje)}
+main{max-width:1180px;margin:0 auto;padding:20px 16px 80px;display:grid;gap:18px}
+.karta{background:var(--povrsina);border:1px solid var(--rub);border-radius:12px;padding:18px 20px;box-shadow:var(--sjena);min-width:0}
+.karta>h2{font-size:1rem;margin:0 0 4px}
+.karta>.opis{margin:0 0 14px;color:var(--blago);font-size:.88rem}
+.polja{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 16px}
+label.polje{display:grid;gap:4px;font-size:.82rem;color:var(--blago);font-weight:500}
+input[type=text],input[type=date],select,textarea{width:100%;padding:8px 10px;border:1px solid var(--rub-jak);border-radius:8px;background:var(--povrsina);min-width:0}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--akcent);outline-offset:-1px;border-color:transparent}
+input.krivo{border-color:var(--greska);background:var(--greska-blago)}
+.gumb{color:inherit;border:1px solid var(--rub-jak);background:var(--povrsina);padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:500;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.gumb:hover{border-color:var(--blago)}
+.gumb.glavni{background:var(--akcent);border-color:var(--akcent);color:var(--akcent-tekst)}
+.gumb.glavni:hover{filter:brightness(1.08)}
+.gumb:disabled{opacity:.5;cursor:default}
+.ikona{border:0;background:none;cursor:pointer;padding:6px;border-radius:6px;color:var(--blago);line-height:0}
+.ikona:hover{background:var(--pozadina);color:var(--tekst)}
+.ikona svg{width:16px;height:16px}
+.naziv-datoteke{margin-top:12px;font:12.5px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--blago);word-break:break-all}
+.naziv-datoteke b{color:var(--tekst);font-weight:500}
+.formati{display:flex;gap:16px;align-items:center;font-size:.9rem;padding-top:4px}
+.formati label{display:flex;gap:6px;align-items:center}
+
+/* Tablica usluga */
+.usluge{width:100%;border-collapse:collapse;table-layout:fixed}
+.usluge th{font-size:.74rem;text-transform:uppercase;letter-spacing:.04em;color:var(--blago);font-weight:600;text-align:left;padding:6px 6px 8px;border-bottom:1px solid var(--rub);white-space:nowrap}
+.usluge td{padding:6px;border-bottom:1px solid var(--rub);vertical-align:top}
+.usluge tr:last-child td{border-bottom:0}
+.usluge .c-kat{width:15%}.usluge .c-jed{width:11%}.usluge .c-iznos{width:92px}.usluge .c-dat{width:142px}.usluge .c-akc{width:190px}.usluge .c-akcije{width:92px;white-space:nowrap}
+.usluge input[type=text],.usluge input[type=date]{padding:7px 8px}
+.iznos{text-align:right;font-variant-numeric:tabular-nums}
+.akcija-celija{display:grid;gap:6px}
+.akcija-celija label.najniza[hidden]{display:none!important}
+.akcija-celija label{display:flex;gap:6px;align-items:center;font-size:.85rem;padding-top:7px;white-space:nowrap}
+.akcija-celija .mala{font-size:.75rem;color:var(--blago)}
+.mob{display:none}
+.prazno{padding:26px;text-align:center;color:var(--blago);border:1px dashed var(--rub-jak);border-radius:10px}
+.alati{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
+.alati .savjet{color:var(--blago);font-size:.82rem;flex:1 1 300px}
+
+@media (max-width:1060px){
+  .usluge{table-layout:auto}
+  .usluge thead{display:none}
+  .usluge,.usluge tbody{display:block}
+  .usluge tr{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px;padding:14px 0;border-bottom:1px solid var(--rub)}
+  .usluge td{display:block;padding:0;border:0;width:auto!important}
+  .usluge td.c-naz,.usluge td.c-akc{grid-column:1/-1}
+  .usluge td.c-akcije{grid-column:1/-1;display:flex;justify-content:flex-end}
+  .mob{display:block;font-size:.74rem;color:var(--blago);margin-bottom:3px;font-weight:500}
+}
+
+.dvostupac{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:980px){.dvostupac{grid-template-columns:1fr}}
+#pregled{border:1px solid var(--rub);border-radius:10px;padding:4px 14px 14px;background:#fff;color:#1c1b19;overflow:auto}
+.arhiva{list-style:none;margin:0;padding:0}
+.arhiva li{display:grid;grid-template-columns:auto 1fr auto;gap:2px 12px;padding:10px 0;border-bottom:1px solid var(--rub);font-size:.88rem;align-items:baseline}
+.arhiva li:last-child{border-bottom:0}
+.arhiva .br{font-weight:700;font-variant-numeric:tabular-nums}
+.arhiva .dat{color:var(--blago);font-size:.8rem;grid-column:2/-1}
+.arhiva a{color:inherit;word-break:break-all;grid-column:2/-1;font-size:.8rem}
+.znacka{font-size:.72rem;padding:2px 8px;border-radius:999px;background:var(--akcent-blago);color:var(--akcent);font-weight:600;white-space:nowrap}
+.znacka.brisanje{background:var(--upozorenje-blago);color:var(--upozorenje)}
+.greske{background:var(--greska-blago);color:var(--greska);border-radius:10px;padding:12px 16px;font-size:.88rem}
+.greske ul{margin:6px 0 0;padding-left:18px}
+.greske[hidden]{display:none}
+.poruka{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;transition:.25s;background:var(--tekst);color:var(--pozadina);padding:12px 18px;border-radius:10px;font-size:.9rem;max-width:min(560px,calc(100vw - 32px));box-shadow:0 8px 30px rgba(0,0,0,.2);pointer-events:none;z-index:10}
+.poruka.vidljiva{opacity:1;transform:translateX(-50%)}
+</style>
+</head>
+<body>
+<div class="traka"><div class="traka-unutra">
+  <h1>Cjenik usluga</h1>
+  <span id="status" class="status">Učitavanje…</span>
+  <a class="gumb" href="/pregled/" target="_blank" rel="noopener">Javna stranica ↗</a>
+  <button class="gumb glavni" id="objavi">Objavi cjenik</button>
+</div></div>
+
+<main>
+  <div class="greske" id="greske" hidden></div>
+
+  <section class="karta">
+    <h2>Obrt i prodajni objekt</h2>
+    <p class="opis">Ovi podaci ulaze u naziv datoteke i zaglavlje XML-a.</p>
+    <div class="polja">
+      <label class="polje">Naziv obrta / tvrtke<input type="text" data-p="obveznik.naziv" placeholder="npr. Frizerski salon Ana, vl. Ana Anić"></label>
+      <label class="polje">OIB (neobavezno)<input type="text" data-p="obveznik.oib" inputmode="numeric" maxlength="11"></label>
+      <label class="polje">Oblik / vrsta objekta<input type="text" data-p="objekt.oblik" list="oblici" placeholder="servis, salon, ured…"></label>
+      <label class="polje">Adresa objekta<input type="text" data-p="objekt.adresa" placeholder="Vukovarska 20 Osijek"></label>
+      <label class="polje">Oznaka objekta<input type="text" data-p="objekt.oznaka" placeholder="01 ili U-01"></label>
+      <label class="polje">Naslov javne stranice<input type="text" data-p="naslovStranice"></label>
+      <label class="polje" style="grid-column:1/-1">Napomena ispod tablice<input type="text" data-p="napomena"></label>
+    </div>
+    <div class="formati">
+      <span style="color:var(--blago);font-size:.82rem">Formati:</span>
+      <label><input type="checkbox" data-format="xml"> XML</label>
+      <label><input type="checkbox" data-format="csv"> CSV</label>
+    </div>
+    <div class="naziv-datoteke">Iduća datoteka: <b id="iducaDatoteka">—</b></div>
+    <datalist id="oblici"><option value="servis"><option value="salon"><option value="ured"><option value="radionica"><option value="studio"><option value="ordinacija"><option value="ugostiteljski objekt"><option value="webshop"><option value="prodavaonica"></datalist>
+  </section>
+
+  <section class="karta">
+    <h2>Usluge i cijene</h2>
+    <p class="opis">Uz trenutnu cijenu upiši cijenu koja je vrijedila 10.9.2026. (redovnu, bez akcije). Ako se cijena nije mijenjala, obje su iste.</p>
+    <table class="usluge">
+      <thead><tr>
+        <th class="c-kat">Kategorija</th><th class="c-naz">Opis usluge</th><th class="c-jed">Jedinica</th>
+        <th class="c-iznos" style="text-align:right">Trenutna €</th><th class="c-iznos" style="text-align:right">Sidrena €</th>
+        <th class="c-dat">Datum sidrenja</th><th class="c-akc">Poseban oblik prodaje</th><th class="c-akcije"></th>
+      </tr></thead>
+      <tbody id="retci"></tbody>
+    </table>
+    <div id="prazno" class="prazno" hidden>Još nema usluga. Dodaj prvu.</div>
+    <div class="alati">
+      <button class="gumb" id="dodaj">+ Dodaj uslugu</button>
+      <span class="savjet">Za uslugu uvedenu nakon 10.9.2026. upiši datum kad je uvedena i cijenu s tog dana. Kategorija je neobavezna i grupira usluge u zasebne tablice.</span>
+    </div>
+  </section>
+
+  <div class="dvostupac">
+    <section class="karta">
+      <h2>Pregled tablice</h2>
+      <p class="opis">Ovako će cjenik izgledati na stranici (ažurira se dok pišeš).</p>
+      <div id="pregled"></div>
+    </section>
+    <section class="karta">
+      <h2>Objavljeni cjenici</h2>
+      <p class="opis">Nova datoteka nastaje samo kad se cijene ili podaci promijene. Čuva se sve iz zadnjih <span id="dana">30</span> dana i zadnja objava prije toga.</p>
+      <ul class="arhiva" id="arhiva"></ul>
+    </section>
+  </div>
+</main>
+<div class="poruka" id="poruka" role="status"></div>
+
+<template id="redak">
+  <tr>
+    <td class="c-kat"><span class="mob">Kategorija</span><input type="text" data-s="kategorija" list="kategorije"></td>
+    <td class="c-naz"><span class="mob">Opis usluge</span><input type="text" data-s="naziv" placeholder="npr. Muško šišanje"></td>
+    <td class="c-jed"><span class="mob">Jedinica</span><input type="text" data-s="jedinica" placeholder="po satu"></td>
+    <td class="c-iznos"><span class="mob">Trenutna cijena €</span><input type="text" class="iznos" data-s="cijena" inputmode="decimal" placeholder="0,00"></td>
+    <td class="c-iznos"><span class="mob">Cijena na datum sidrenja €</span><input type="text" class="iznos" data-s="sidrenaCijena" inputmode="decimal" placeholder="0,00"></td>
+    <td class="c-dat"><span class="mob">Datum sidrenja</span><input type="date" data-s="datumSidrenja"></td>
+    <td class="c-akc"><div class="akcija-celija">
+      <label><input type="checkbox" data-s="akcija.aktivna"> Akcija / popust</label>
+      <input type="text" data-s="akcija.naziv" placeholder="Naziv, npr. Jesenska akcija" hidden>
+      <label class="najniza" hidden style="display:grid;gap:3px;padding:0;white-space:normal"><span class="mala">Najniža cijena u 30 dana prije akcije</span>
+      <input type="text" class="iznos" data-s="akcija.najniza30" inputmode="decimal" placeholder="auto" title="Ako ostane prazno, izračuna se iz prethodnih objava"></label>
+    </div></td>
+    <td class="c-akcije">
+      <button class="ikona" data-a="gore" title="Pomakni gore" aria-label="Pomakni gore"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10l4-4 4 4"/></svg></button>
+      <button class="ikona" data-a="dolje" title="Pomakni dolje" aria-label="Pomakni dolje"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6l4 4 4-4"/></svg></button>
+      <button class="ikona" data-a="obrisi" title="Obriši" aria-label="Obriši uslugu"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.6 8.5h5.8l.6-8.5"/></svg></button>
+    </td>
+  </tr>
+</template>
+<datalist id="kategorije"></datalist>
+
+<script>
+const $ = (s) => document.querySelector(s);
+let podaci = null;
+let zadnjeStanje = null;
+
+async function api(metoda, putanja, tijelo) {
+  const r = await fetch(putanja, {
+    method: metoda,
+    headers: { 'content-type': 'application/json', 'x-cjenik': '1' },
+    body: tijelo ? JSON.stringify(tijelo) : undefined,
+  });
+  const j = await r.json();
+  if (!r.ok && !j.greske) throw new Error(j.greska || r.statusText);
+  return { ok: r.ok, ...j };
+}
+
+const dohvati = (o, p) => p.split('.').reduce((a, k) => a?.[k], o);
+function postavi(o, p, v) {
+  const k = p.split('.');
+  const zadnji = k.pop();
+  k.reduce((a, x) => (a[x] ??= {}), o)[zadnji] = v;
+}
+const uTekst = (v) => (v === null || v === undefined ? '' : typeof v === 'number' ? v.toFixed(2).replace('.', ',') : v);
+function parsiraj(v) {
+  let s = String(v ?? '').trim().replace(/\s|€/g, '');
+  if (!s) return null;
+  if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
+  return /^\d+(\.\d+)?$/.test(s) ? Math.round(parseFloat(s) * 100) / 100 : NaN;
+}
+const noviId = () => Math.random().toString(16).slice(2, 12);
+
+function poruka(t, trajanje = 4200) {
+  const el = $('#poruka');
+  el.textContent = t;
+  el.classList.add('vidljiva');
+  clearTimeout(poruka.t);
+  poruka.t = setTimeout(() => el.classList.remove('vidljiva'), trajanje);
+}
+
+/* ---------- Iscrtavanje ---------- */
+function iscrtajPolja() {
+  document.querySelectorAll('[data-p]').forEach((el) => { el.value = dohvati(podaci, el.dataset.p) ?? ''; });
+  document.querySelectorAll('[data-format]').forEach((el) => { el.checked = (podaci.formati || []).includes(el.dataset.format); });
+}
+
+function iscrtajRetke() {
+  const tbody = $('#retci');
+  tbody.textContent = '';
+  const tpl = $('#redak');
+  podaci.stavke.forEach((s, i) => {
+    const tr = tpl.content.firstElementChild.cloneNode(true);
+    tr.dataset.i = i;
+    tr.querySelectorAll('[data-s]').forEach((el) => {
+      const v = dohvati(s, el.dataset.s);
+      if (el.type === 'checkbox') el.checked = !!v;
+      else el.value = el.classList.contains('iznos') ? uTekst(v) : (v ?? '');
+    });
+    prikaziAkciju(tr, s);
+    tbody.appendChild(tr);
+  });
+  $('#prazno').hidden = podaci.stavke.length > 0;
+  $('.usluge thead').style.display = podaci.stavke.length ? '' : 'none';
+  osvjeziKategorije();
+}
+
+function prikaziAkciju(tr, s) {
+  tr.querySelector('[data-s="akcija.naziv"]').hidden = !s.akcija.aktivna;
+  tr.querySelector('.najniza').hidden = !s.akcija.aktivna;
+}
+
+function osvjeziKategorije() {
+  const k = [...new Set(podaci.stavke.map((s) => s.kategorija).filter(Boolean))];
+  $('#kategorije').innerHTML = k.map((x) => `<option value="${x.replace(/"/g, '&quot;')}">`).join('');
+}
+
+function iscrtajStanje(st) {
+  zadnjeStanje = st;
+  const s = $('#status');
+  if (!st.arhiva.length) { s.textContent = 'Još nije objavljeno'; s.className = 'status ceka'; }
+  else if (st.promjene) { s.textContent = 'Neobjavljene promjene'; s.className = 'status ceka'; }
+  else { s.textContent = 'Objavljeno · br. ' + st.arhiva[0].broj; s.className = 'status'; }
+  $('#dana').textContent = podaci.danaArhive || 30;
+
+  const ul = $('#arhiva');
+  ul.innerHTML = st.arhiva.length ? '' : '<li style="display:block;color:var(--blago)">Još nema objava.</li>';
+  st.arhiva.forEach((o, i) => {
+    const li = document.createElement('li');
+    const d = new Date(o.datum);
+    const znacka = i === 0 ? '<span class="znacka">važeći</span>'
+      : o.brisanje ? '<span class="znacka brisanje">briše se pri objavi</span>' : '';
+    li.innerHTML = `<span class="br">#${o.broj}</span><span>${d.toLocaleString('hr-HR', { dateStyle: 'medium', timeStyle: 'short' })}</span>${znacka}`
+      + `<span class="dat">${o.starost === 0 ? 'danas' : `prije ${o.starost} ${o.starost % 10 === 1 && o.starost % 100 !== 11 ? 'dan' : 'dana'}`}</span>`;
+    o.datoteke.forEach((f) => {
+      const a = document.createElement('a');
+      a.href = '/pregled/arhiva/' + encodeURIComponent(f);
+      a.target = '_blank';
+      a.textContent = f;
+      li.appendChild(a);
+    });
+    ul.appendChild(li);
+  });
+  iducaDatoteka();
+}
+
+function iducaDatoteka() {
+  const d = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Zagreb', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+    .formatToParts(new Date()).reduce((a, p) => ((a[p.type] = p.value), a), {});
+  const cisti = (s) => String(s || '').replace(/[\\/_:*?"<>|]+/g, '-').replace(/\s+/g, ' ').trim() || '…';
+  const broj = String((podaci.brojPohrane || 0) + 1).padStart(3, '0');
+  const sep = podaci.separatorVremena || ':';
+  $('#iducaDatoteka').textContent = [cisti(podaci.objekt.oblik), cisti(podaci.objekt.adresa), cisti(podaci.objekt.oznaka), broj,
+    `${d.day}.${d.month}.${d.year}`, `${d.hour}${sep}${d.minute}`].join('_') + '.xml';
+}
+
+function prikaziGreske(g) {
+  const el = $('#greske');
+  if (!g?.length) { el.hidden = true; return; }
+  el.hidden = false;
+  el.innerHTML = '<strong>Prije objave ispravi:</strong><ul></ul>';
+  g.forEach((x) => { const li = document.createElement('li'); li.textContent = x; el.querySelector('ul').appendChild(li); });
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ---------- Pregled i spremanje nacrta ---------- */
+const pregledKorijen = $('#pregled').attachShadow({ mode: 'open' });
+let tPregled, tSpremi;
+function promjena() {
+  clearTimeout(tPregled);
+  tPregled = setTimeout(async () => {
+    const { html } = await api('POST', '/api/pregled', nacrt());
+    pregledKorijen.innerHTML = html;
+  }, 250);
+  clearTimeout(tSpremi);
+  tSpremi = setTimeout(async () => {
+    const st = await api('PUT', '/api/nacrt', nacrt());
+    iscrtajStanje(st);
+  }, 700);
+  iducaDatoteka();
+}
+
+/** Podaci za slanje: iznosi kao brojevi (NaN -> tekst da poslužitelj javi grešku). */
+function nacrt() {
+  const n = structuredClone(podaci);
+  n.stavke = n.stavke.map((s) => {
+    for (const k of ['cijena', 'sidrenaCijena']) s[k] = broj(s[k]);
+    s.akcija.najniza30 = broj(s.akcija.najniza30);
+    return s;
+  });
+  return n;
+}
+function broj(v) {
+  if (typeof v === 'number' || v === null) return v;
+  const p = parsiraj(v);
+  return Number.isNaN(p) ? v : p;
+}
+
+/* ---------- Događaji ---------- */
+document.addEventListener('input', (e) => {
+  const el = e.target;
+  if (el.dataset.p) { postavi(podaci, el.dataset.p, el.value); promjena(); }
+  if (el.dataset.format) {
+    const f = new Set(podaci.formati || []);
+    el.checked ? f.add(el.dataset.format) : f.delete(el.dataset.format);
+    if (!f.size) { f.add('xml'); iscrtajPolja(); }
+    podaci.formati = ['xml', 'csv'].filter((x) => f.has(x));
+    promjena();
+  }
+  if (el.dataset.s) {
+    const tr = el.closest('tr');
+    const s = podaci.stavke[tr.dataset.i];
+    const v = el.type === 'checkbox' ? el.checked : el.value;
+    postavi(s, el.dataset.s, v);
+    if (el.classList.contains('iznos')) el.classList.toggle('krivo', Number.isNaN(parsiraj(el.value)));
+    if (el.dataset.s === 'akcija.aktivna') prikaziAkciju(tr, s);
+    if (el.dataset.s === 'kategorija') osvjeziKategorije();
+    promjena();
+  }
+});
+
+// Kad se upiše trenutna cijena, a sidrena je prazna — predloži istu.
+document.addEventListener('focusout', (e) => {
+  const el = e.target;
+  if (el.dataset?.s !== 'cijena') return;
+  const tr = el.closest('tr');
+  const s = podaci.stavke[tr.dataset.i];
+  const sid = tr.querySelector('[data-s="sidrenaCijena"]');
+  if (!sid.value && Number.isFinite(parsiraj(el.value))) {
+    sid.value = el.value;
+    s.sidrenaCijena = el.value;
+    promjena();
+  }
+  const p = parsiraj(el.value);
+  if (Number.isFinite(p)) el.value = uTekst(p);
+});
+
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-a]');
+  if (!b) return;
+  const i = +b.closest('tr').dataset.i;
+  const st = podaci.stavke;
+  if (b.dataset.a === 'obrisi') {
+    if (st[i].naziv && !confirm(`Obrisati uslugu "${st[i].naziv}"?`)) return;
+    st.splice(i, 1);
+  }
+  if (b.dataset.a === 'gore' && i > 0) [st[i - 1], st[i]] = [st[i], st[i - 1]];
+  if (b.dataset.a === 'dolje' && i < st.length - 1) [st[i + 1], st[i]] = [st[i], st[i + 1]];
+  iscrtajRetke();
+  promjena();
+});
+
+$('#dodaj').addEventListener('click', () => {
+  const zadnja = podaci.stavke.at(-1);
+  podaci.stavke.push({
+    id: noviId(), kategorija: zadnja?.kategorija || '', naziv: '', jedinica: '',
+    cijena: null, sidrenaCijena: null, datumSidrenja: '2026-09-10',
+    akcija: { aktivna: false, naziv: '', najniza30: null },
+  });
+  iscrtajRetke();
+  $('#retci').lastElementChild.querySelector('[data-s="naziv"]').focus();
+  promjena();
+});
+
+$('#objavi').addEventListener('click', async () => {
+  const b = $('#objavi');
+  b.disabled = true;
+  clearTimeout(tSpremi);
+  try {
+    const r = await api('POST', '/api/objavi', nacrt());
+    if (!r.ok) return prikaziGreske(r.greske);
+    prikaziGreske([]);
+    podaci = r.podaci;
+    iscrtajPolja();
+    iscrtajRetke();
+    iscrtajStanje(r);
+    const rz = r.rezultat;
+    let t = rz.nova ? `Objavljen cjenik br. ${rz.nova.broj}.` : 'Nema promjena u cijenama, pa XML nije mijenjan. Stranica je osvježena.';
+    if (rz.obrisano.length) t += ` Iz arhive obrisano: ${rz.obrisano.length}.`;
+    if (rz.umetnuto.length) t += ` Tablica umetnuta u: ${rz.umetnuto.join(', ')}.`;
+    if (rz.upozorenja.length) t += ' ' + rz.upozorenja.join(' ');
+    if (rz.naredba) t += rz.naredba.ok ? ' Naredba nakon objave je izvršena.' : ' Naredba nakon objave NIJE uspjela: ' + rz.naredba.izlaz;
+    poruka(t, 7000);
+  } catch (err) {
+    poruka('Greška: ' + err.message, 7000);
+  } finally {
+    b.disabled = false;
+  }
+});
+
+(async () => {
+  const st = await api('GET', '/api/stanje');
+  podaci = st.podaci;
+  iscrtajPolja();
+  iscrtajRetke();
+  iscrtajStanje(st);
+  const { html } = await api('POST', '/api/pregled', nacrt());
+  pregledKorijen.innerHTML = html;
+})();
+</script>
+</body>
+</html>

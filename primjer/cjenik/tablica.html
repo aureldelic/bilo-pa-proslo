@@ -1,0 +1,25 @@
+<style>
+.cjenik{--cjenik-akcent:#b4232a;--cjenik-rub:rgba(128,128,128,.28);--cjenik-blago:rgba(128,128,128,.75);--cjenik-pozadina-zaglavlja:rgba(128,128,128,.08);font-variant-numeric:tabular-nums;color:inherit;max-width:100%}
+.cjenik *{box-sizing:border-box}
+.cjenik-tablica{width:100%;border-collapse:collapse;font-size:1rem;line-height:1.4}
+.cjenik-tablica caption{text-align:left;font-weight:700;font-size:1.05em;padding:1.4em 0 .5em}
+.cjenik-tablica th,.cjenik-tablica td{padding:.7em .75em;border-bottom:1px solid var(--cjenik-rub);vertical-align:top;text-align:left}
+.cjenik-tablica thead th{font-size:.78em;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--cjenik-blago);background:var(--cjenik-pozadina-zaglavlja);border-bottom-width:2px}
+.cjenik-tablica .cjenik-iznos{text-align:right;white-space:nowrap;width:1%}
+.cjenik-tablica tbody tr:last-child td{border-bottom:0}
+.cjenik-naziv{font-weight:500}
+.cjenik-jedinica,.cjenik-mala{display:block;font-size:.82em;color:var(--cjenik-blago);font-weight:400}
+.cjenik-cijena{font-weight:700}
+.cjenik-akcija .cjenik-cijena{color:var(--cjenik-akcent)}
+.cjenik-oznaka{display:inline-block;margin-top:.3em;padding:.1em .5em;border-radius:999px;font-size:.72em;font-weight:600;background:var(--cjenik-akcent);color:#fff;white-space:nowrap}
+.cjenik-sidrena{color:inherit}
+.cjenik-podnozje{margin-top:.9em;font-size:.85em;color:var(--cjenik-blago)}
+.cjenik-podnozje a{color:inherit}
+@media (max-width:520px){.cjenik-tablica{font-size:.92rem}.cjenik-tablica th,.cjenik-tablica td{padding:.6em .45em}}
+</style>
+<div class="cjenik">
+<table class="cjenik-tablica"><caption>Šišanje</caption><thead><tr><th scope="col">Usluga</th><th scope="col" class="cjenik-iznos">Cijena</th><th scope="col" class="cjenik-iznos">Cijena na 10.9.2026.</th></tr></thead><tbody><tr><td><span class="cjenik-naziv">Žensko šišanje – kratka kosa</span></td><td class="cjenik-iznos"><span class="cjenik-cijena">25,00 €</span></td><td class="cjenik-iznos"><span class="cjenik-sidrena">22,00 €</span></td></tr><tr><td><span class="cjenik-naziv">Žensko šišanje – duga kosa</span></td><td class="cjenik-iznos"><span class="cjenik-cijena">32,00 €</span></td><td class="cjenik-iznos"><span class="cjenik-sidrena">30,00 €</span></td></tr><tr><td><span class="cjenik-naziv">Muško šišanje</span></td><td class="cjenik-iznos"><span class="cjenik-cijena">17,00 €</span></td><td class="cjenik-iznos"><span class="cjenik-sidrena">15,00 €</span></td></tr></tbody></table>
+<table class="cjenik-tablica"><caption>Bojanje</caption><thead><tr><th scope="col">Usluga</th><th scope="col" class="cjenik-iznos">Cijena</th><th scope="col" class="cjenik-iznos">Cijena na 10.9.2026.</th></tr></thead><tbody><tr><td><span class="cjenik-naziv">Bojanje izrasta</span></td><td class="cjenik-iznos"><span class="cjenik-cijena">40,00 €</span></td><td class="cjenik-iznos"><span class="cjenik-sidrena">38,00 €</span></td></tr><tr class="cjenik-akcija"><td><span class="cjenik-naziv">Pramenovi (balayage)</span><span class="cjenik-jedinica">ovisno o duljini kose</span></td><td class="cjenik-iznos"><span class="cjenik-cijena">68,00 €</span><br><span class="cjenik-oznaka">Jesenska akcija</span></td><td class="cjenik-iznos"><span class="cjenik-sidrena">80,00 €</span></td></tr></tbody></table>
+<table class="cjenik-tablica"><caption>Njega</caption><thead><tr><th scope="col">Usluga</th><th scope="col" class="cjenik-iznos">Cijena</th><th scope="col" class="cjenik-iznos">Cijena na 10.9.2026.</th></tr></thead><tbody><tr><td><span class="cjenik-naziv">Tretman keratinom</span></td><td class="cjenik-iznos"><span class="cjenik-cijena">60,00 €</span></td><td class="cjenik-iznos"><span class="cjenik-sidrena">60,00 €</span></td></tr><tr><td><span class="cjenik-naziv">Tretman vlasišta</span></td><td class="cjenik-iznos"><span class="cjenik-cijena">35,00 €</span></td><td class="cjenik-iznos"><span class="cjenik-sidrena">35,00 €</span><span class="cjenik-mala">cijena na 18.9.2026.</span></td></tr></tbody></table>
+<p class="cjenik-podnozje">Cijene su iskazane u eurima (EUR). Cjenik vrijedi od 23.09.2026. u 13:37. <a href="cjenik.xml">Strojno čitljivi cjenik (XML)</a></p>
+</div>

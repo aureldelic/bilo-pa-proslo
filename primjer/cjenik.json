@@ -1,0 +1,219 @@
+{
+  "obveznik": {
+    "naziv": "Frizerski salon Ana, vl. Ana Anić",
+    "oib": ""
+  },
+  "objekt": {
+    "oblik": "salon",
+    "adresa": "Vukovarska 20 Osijek",
+    "oznaka": "01"
+  },
+  "izlaz": "cjenik",
+  "formati": [
+    "xml",
+    "csv"
+  ],
+  "danaArhive": 30,
+  "separatorVremena": ":",
+  "umetni": [
+    "index.html"
+  ],
+  "naslovStranice": "Cjenik usluga",
+  "napomena": "Cijene su iskazane u eurima (EUR).",
+  "nakonObjave": "",
+  "stavke": [
+    {
+      "id": "f78403dde8",
+      "kategorija": "Šišanje",
+      "naziv": "Žensko šišanje – kratka kosa",
+      "jedinica": "",
+      "cijena": 25,
+      "sidrenaCijena": 22,
+      "datumSidrenja": "2026-09-10",
+      "akcija": {
+        "aktivna": false,
+        "naziv": "",
+        "najniza30": null
+      }
+    },
+    {
+      "id": "9b0acda655",
+      "kategorija": "Šišanje",
+      "naziv": "Žensko šišanje – duga kosa",
+      "jedinica": "",
+      "cijena": 32,
+      "sidrenaCijena": 30,
+      "datumSidrenja": "2026-09-10",
+      "akcija": {
+        "aktivna": false,
+        "naziv": "",
+        "najniza30": null
+      }
+    },
+    {
+      "id": "80b4fa71b0",
+      "kategorija": "Šišanje",
+      "naziv": "Muško šišanje",
+      "jedinica": "",
+      "cijena": 17,
+      "sidrenaCijena": 15,
+      "datumSidrenja": "2026-09-10",
+      "akcija": {
+        "aktivna": false,
+        "naziv": "",
+        "najniza30": null
+      }
+    },
+    {
+      "id": "5c427b3b20",
+      "kategorija": "Bojanje",
+      "naziv": "Bojanje izrasta",
+      "jedinica": "",
+      "cijena": 40,
+      "sidrenaCijena": 38,
+      "datumSidrenja": "2026-09-10",
+      "akcija": {
+        "aktivna": false,
+        "naziv": "",
+        "najniza30": null
+      }
+    },
+    {
+      "id": "b8bdf0358e",
+      "kategorija": "Bojanje",
+      "naziv": "Pramenovi (balayage)",
+      "jedinica": "ovisno o duljini kose",
+      "cijena": 68,
+      "sidrenaCijena": 80,
+      "datumSidrenja": "2026-09-10",
+      "akcija": {
+        "aktivna": true,
+        "naziv": "Jesenska akcija",
+        "najniza30": null
+      }
+    },
+    {
+      "id": "603a3069f4",
+      "kategorija": "Njega",
+      "naziv": "Tretman keratinom",
+      "jedinica": "",
+      "cijena": 60,
+      "sidrenaCijena": 60,
+      "datumSidrenja": "2026-09-10",
+      "akcija": {
+        "aktivna": false,
+        "naziv": "",
+        "najniza30": null
+      }
+    },
+    {
+      "id": "a1b2c3d4e5",
+      "kategorija": "Njega",
+      "naziv": "Tretman vlasišta",
+      "jedinica": "",
+      "cijena": 35,
+      "sidrenaCijena": 35,
+      "datumSidrenja": "2026-09-18",
+      "akcija": {
+        "aktivna": false,
+        "naziv": "",
+        "najniza30": null
+      }
+    }
+  ],
+  "brojPohrane": 2,
+  "objave": [
+    {
+      "broj": 1,
+      "datum": "2026-09-23T13:36:47+02:00",
+      "otisak": "7748d8ac707e1d38",
+      "datoteke": [
+        "salon_Vukovarska 20 Osijek_01_001_23.09.2026_13:36.xml",
+        "salon_Vukovarska 20 Osijek_01_001_23.09.2026_13:36.csv"
+      ],
+      "stavke": [
+        {
+          "id": "f78403dde8",
+          "cijena": 25,
+          "akcija": false
+        },
+        {
+          "id": "9b0acda655",
+          "cijena": 32,
+          "akcija": false
+        },
+        {
+          "id": "80b4fa71b0",
+          "cijena": 15,
+          "akcija": false
+        },
+        {
+          "id": "5c427b3b20",
+          "cijena": 40,
+          "akcija": false
+        },
+        {
+          "id": "b8bdf0358e",
+          "cijena": 68,
+          "akcija": true
+        },
+        {
+          "id": "603a3069f4",
+          "cijena": 60,
+          "akcija": false
+        },
+        {
+          "id": "a1b2c3d4e5",
+          "cijena": 35,
+          "akcija": false
+        }
+      ]
+    },
+    {
+      "broj": 2,
+      "datum": "2026-09-23T13:37:36+02:00",
+      "otisak": "8bec29a1cd449f98",
+      "datoteke": [
+        "salon_Vukovarska 20 Osijek_01_002_23.09.2026_13:37.xml",
+        "salon_Vukovarska 20 Osijek_01_002_23.09.2026_13:37.csv"
+      ],
+      "stavke": [
+        {
+          "id": "f78403dde8",
+          "cijena": 25,
+          "akcija": false
+        },
+        {
+          "id": "9b0acda655",
+          "cijena": 32,
+          "akcija": false
+        },
+        {
+          "id": "80b4fa71b0",
+          "cijena": 17,
+          "akcija": false
+        },
+        {
+          "id": "5c427b3b20",
+          "cijena": 40,
+          "akcija": false
+        },
+        {
+          "id": "b8bdf0358e",
+          "cijena": 68,
+          "akcija": true
+        },
+        {
+          "id": "603a3069f4",
+          "cijena": 60,
+          "akcija": false
+        },
+        {
+          "id": "a1b2c3d4e5",
+          "cijena": 35,
+          "akcija": false
+        }
+      ]
+    }
+  ]
+}
