@@ -17,30 +17,6 @@ h1{font-weight:400;font-size:2.2rem;margin:0 0 .2em}
 <p>Primjer postojeće statične stranice. Tablica ispod umeće se automatski pri svakoj objavi.</p>
 <h2>Cjenik</h2>
 <!-- cjenik:pocetak -->
-<style>
-.cjenik{--cjenik-akcent:#b4232a;--cjenik-rub:rgba(128,128,128,.28);--cjenik-blago:rgba(128,128,128,.75);--cjenik-pozadina-zaglavlja:rgba(128,128,128,.08);font-variant-numeric:tabular-nums;color:inherit;max-width:100%}
-.cjenik *{box-sizing:border-box}
-.cjenik-tablica{width:100%;border-collapse:collapse;font-size:1rem;line-height:1.4}
-.cjenik-tablica .cjenik-kategorija th{font-size:1.02em;font-weight:700;padding:1.3em .75em .45em;border-bottom:1px solid var(--cjenik-rub)}
-.cjenik-tablica tbody:first-of-type .cjenik-kategorija th{padding-top:.9em}
-.cjenik-tablica th,.cjenik-tablica td{padding:.7em .75em;border-bottom:1px solid var(--cjenik-rub);vertical-align:top;text-align:left}
-.cjenik-tablica thead th{font-size:.78em;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--cjenik-blago);background:var(--cjenik-pozadina-zaglavlja);border-bottom-width:2px}
-.cjenik-tablica .cjenik-iznos{text-align:right;white-space:nowrap;width:1%}
-.cjenik-tablica tbody:last-child tr:last-child td{border-bottom:0}
-.cjenik-tablica .cjenik-iznos .cjenik-mala{white-space:normal;min-width:8.5em}
-.cjenik-naziv{font-weight:500}
-.cjenik-jedinica,.cjenik-mala{display:block;font-size:.82em;color:var(--cjenik-blago);font-weight:400}
-.cjenik-cijena{font-weight:700}
-.cjenik-akcija .cjenik-cijena{color:var(--cjenik-akcent)}
-.cjenik-oznaka{display:inline-block;margin-top:.3em;padding:.1em .5em;border-radius:999px;font-size:.72em;font-weight:600;background:var(--cjenik-akcent);color:#fff;white-space:nowrap}
-.cjenik-podnozje{margin-top:.9em;font-size:.85em;color:var(--cjenik-blago)}
-.cjenik-podnozje a{color:inherit}
-@media (max-width:520px){.cjenik-tablica{font-size:.92rem}.cjenik-tablica thead .cjenik-iznos{white-space:normal;min-width:5.5em}.cjenik-tablica th,.cjenik-tablica td{padding:.6em .45em}}
-</style>
-<div class="cjenik">
-<table class="cjenik-tablica"><thead><tr><th scope="col">Usluga</th><th scope="col" class="cjenik-iznos">Cijena</th><th scope="col" class="cjenik-iznos">Cijena na 10.9.2026.</th></tr></thead><tbody><tr class="cjenik-kategorija"><th colspan="3" scope="colgroup">Šišanje</th></tr><tr><td><span class="cjenik-naziv">Žensko šišanje – kratka kosa</span></td><td class="cjenik-iznos"><span class="cjenik-cijena">25,00 €</span></td><td class="cjenik-iznos"><span class="cjenik-sidrena">22,00 €</span></td></tr><tr><td><span class="cjenik-naziv">Žensko šišanje – duga kosa</span></td><td class="cjenik-iznos"><span class="cjenik-cijena">32,00 €</span></td><td class="cjenik-iznos"><span class="cjenik-sidrena">30,00 €</span></td></tr><tr><td><span class="cjenik-naziv">Muško šišanje</span></td><td class="cjenik-iznos"><span class="cjenik-cijena">15,00 €</span></td><td class="cjenik-iznos"><span class="cjenik-sidrena">15,00 €</span></td></tr></tbody><tbody><tr class="cjenik-kategorija"><th colspan="3" scope="colgroup">Bojanje</th></tr><tr><td><span class="cjenik-naziv">Bojanje izrasta</span></td><td class="cjenik-iznos"><span class="cjenik-cijena">40,00 €</span></td><td class="cjenik-iznos"><span class="cjenik-sidrena">38,00 €</span></td></tr><tr class="cjenik-akcija"><td><span class="cjenik-naziv">Pramenovi (balayage)</span><span class="cjenik-jedinica">ovisno o duljini kose</span></td><td class="cjenik-iznos"><span class="cjenik-cijena">68,00 €</span><br><span class="cjenik-oznaka">Jesenska akcija</span><span class="cjenik-mala">Najniža cijena u zadnjih 30 dana: 80,00 €</span></td><td class="cjenik-iznos"><span class="cjenik-sidrena">80,00 €</span></td></tr></tbody><tbody><tr class="cjenik-kategorija"><th colspan="3" scope="colgroup">Njega</th></tr><tr><td><span class="cjenik-naziv">Tretman keratinom</span></td><td class="cjenik-iznos"><span class="cjenik-cijena">60,00 €</span></td><td class="cjenik-iznos"><span class="cjenik-sidrena">60,00 €</span></td></tr><tr><td><span class="cjenik-naziv">Tretman vlasišta</span></td><td class="cjenik-iznos"><span class="cjenik-cijena">35,00 €</span></td><td class="cjenik-iznos"><span class="cjenik-sidrena">35,00 €</span><span class="cjenik-mala">cijena na 18.9.2026.</span></td></tr></tbody></table>
-<p class="cjenik-podnozje">Cijene su iskazane u eurima (EUR). Cjenik vrijedi od 23.09.2026. u 13:55. <a href="cjenik/cjenik.xml">Strojno čitljivi cjenik (XML)</a></p>
-</div>
 <!-- cjenik:kraj -->
 
 <h2>Isti cjenik preko widgeta</h2>
