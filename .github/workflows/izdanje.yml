@@ -1,9 +1,11 @@
-# Na svaki tag vX.Y.Z: testovi, pa izdanje s cjenik.zip (iz njega se plugin ažurira).
+# Testovi na svaki push; na tag vX.Y.Z još i izdanje s cjenik.zip (iz njega se plugin ažurira).
 name: Izdanje
 
 on:
   push:
+    branches: [main]
     tags: ['v*']
+  pull_request:
 
 permissions:
   contents: write
@@ -11,26 +13,32 @@ permissions:
 jobs:
   izdanje:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['7.4', '8.3']
     steps:
       - uses: actions/checkout@v4
 
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '7.4'
+          php-version: ${{ matrix.php }}
           extensions: zip
 
-      - name: Testovi (PHP 7.4)
+      - name: Testovi (PHP ${{ matrix.php }})
         run: php tests/testovi.php
 
       - name: Verzija u _sustav/VERZIJA mora odgovarati tagu
+        if: startsWith(github.ref, 'refs/tags/v') && matrix.php == '7.4'
         run: |
           test "v$(cat cjenik/_sustav/VERZIJA)" = "${GITHUB_REF_NAME}" \
             || { echo "VERZIJA je $(cat cjenik/_sustav/VERZIJA), a tag ${GITHUB_REF_NAME}"; exit 1; }
 
       - name: Paket
+        if: startsWith(github.ref, 'refs/tags/v') && matrix.php == '7.4'
         run: zip -r cjenik.zip cjenik -x 'cjenik/_podaci/*' 'cjenik/arhiva/*'
 
       - name: Objavi izdanje
+        if: startsWith(github.ref, 'refs/tags/v') && matrix.php == '7.4'
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release create "$GITHUB_REF_NAME" cjenik.zip --title "$GITHUB_REF_NAME" --generate-notes
