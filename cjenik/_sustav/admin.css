@@ -134,3 +134,8 @@ details.upute p{margin:8px 0;color:var(--blago)}
 html[data-tema="tamna"] .tema-prekidac .ikona-sunce{display:block}
 html[data-tema="tamna"] .tema-prekidac .ikona-mjesec{display:none}
 html[data-tema="tamna"] #pregled{background:#1d1d1b;color:#eeece6}
+.tema-omot{position:relative;display:inline-flex}
+.tooltip{position:absolute;top:calc(100% + 8px);right:0;width:260px;padding:10px 12px;border-radius:8px;background:var(--tekst);color:var(--pozadina);font-size:.8rem;line-height:1.45;box-shadow:0 8px 24px rgba(0,0,0,.18);opacity:0;visibility:hidden;transform:translateY(-4px);transition:opacity .12s,transform .12s,visibility .12s;pointer-events:none;z-index:20}
+.tooltip::before{content:"";position:absolute;top:-5px;right:13px;width:10px;height:10px;background:inherit;transform:rotate(45deg)}
+.tema-omot:hover .tooltip,.tema-prekidac:focus-visible+.tooltip{opacity:1;visibility:visible;transform:none}
+@media (hover:none){.tooltip{display:none}}
