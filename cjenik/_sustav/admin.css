@@ -4,10 +4,10 @@
   --greska:#b3261e;--greska-blago:#fbe9e7;--sjena:0 1px 2px rgba(0,0,0,.05),0 4px 16px rgba(0,0,0,.04);
   color-scheme:light;
 }
-@media (prefers-color-scheme:dark){:root{
+html[data-tema="tamna"]{
   --pozadina:#131312;--povrsina:#1c1c1a;--tekst:#ecebe6;--blago:#a29e95;--rub:#302e2a;--rub-jak:#45423c;
   --akcent:#5fbf98;--akcent-tekst:#0d1f18;--akcent-blago:#1b2e27;--upozorenje:#f0b458;--upozorenje-blago:#2e2415;
-  --greska:#f2867d;--greska-blago:#331c1a;--sjena:none;color-scheme:dark}}
+  --greska:#f2867d;--greska-blago:#331c1a;--sjena:none;color-scheme:dark}
 *{box-sizing:border-box}
 body{margin:0;background:var(--pozadina);color:var(--tekst);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -127,3 +127,10 @@ details.upute p{margin:8px 0;color:var(--blago)}
 .autor:hover{color:var(--tekst)}
 .autor svg{width:26px;height:26px;border-radius:4px;display:block}
 .verzija-podnozje{opacity:.8}
+.tema-prekidac{border:1px solid var(--rub-jak);background:var(--povrsina);color:var(--tekst);width:36px;height:34px;border-radius:8px;cursor:pointer;display:inline-grid;place-items:center;padding:0}
+.tema-prekidac:hover{border-color:var(--blago)}
+.tema-prekidac svg{width:17px;height:17px}
+.tema-prekidac .ikona-sunce{display:none}
+html[data-tema="tamna"] .tema-prekidac .ikona-sunce{display:block}
+html[data-tema="tamna"] .tema-prekidac .ikona-mjesec{display:none}
+html[data-tema="tamna"] #pregled{background:#1d1d1b;color:#eeece6}

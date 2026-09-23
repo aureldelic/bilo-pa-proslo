@@ -20,6 +20,7 @@ final class Podaci
             'umetni' => [],
             'naslovStranice' => 'Cjenik usluga',
             'napomena' => 'Cijene su iskazane u eurima (EUR).',
+            'tema' => 'svijetla',
             'stavke' => [],
             'brojPohrane' => 0,
             'objave' => [],
@@ -94,6 +95,7 @@ final class Podaci
         $p['naslovStranice'] = self::tekst($p['naslovStranice']);
         $p['napomena'] = self::tekst($p['napomena'], 1000);
         $p['danaArhive'] = max(30, (int) $p['danaArhive']);
+        $p['tema'] = $p['tema'] === 'tamna' ? 'tamna' : 'svijetla';
         $p['formati'] = array_values(array_intersect(['xml', 'csv'], (array) $p['formati'])) ?: ['xml'];
         $p['separatorVremena'] = in_array($p['separatorVremena'], [':', '-', '.'], true) ? $p['separatorVremena'] : ':';
         $p['stavke'] = array_map(function ($s) {

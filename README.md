@@ -32,6 +32,8 @@ Na adresi `https://stranica.hr/cjenik/admin/` se prijavi e-mailom i lozinkom i u
 - **Usluge:** opis, trenutna cijena i cijena na 10.9.2026. Kad se upiše trenutna cijena, sidrena se predloži sama. Neobavezno se dodaju kategorija, jedinica i akcija.
 - **Objavi cjenik:** nastaje novi XML, osvježi se javna stranica, umetne se tablica u stranice weba i obrišu se stari XML-ovi.
 
+**Tema:** prekidač svijetla/tamna u zaglavlju sučelja mijenja izgled sučelja i javne stranice `/cjenik/` (zadano je svijetla). Tablica umetnuta u stranice weba preuzima boje same stranice.
+
 Izmjene se automatski spremaju kao nacrt. Javno se ništa ne mijenja dok se ne klikne *Objavi*.
 
 ## Što nastaje na stranici

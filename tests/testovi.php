@@ -498,6 +498,19 @@ test('provjera dostupnosti PHP mail()', function () {
     jednako(Posta::posiljatelj(['smtp' => ['host' => 'x', 'korisnik' => 'k@a.hr', 'posiljatelj' => 'p@a.hr']]), 'p@a.hr');
 });
 
+test('tema javne stranice: zadano svijetla, tamna ne mijenja XML', function () use ($pocetak) {
+    $s = instalacija();
+    $o = new Objava($s);
+    $o->objavi($s->objavljeno(), $pocetak);
+    sadrzi(file_get_contents($s->korijen() . '/index.html'), 'data-tema="svijetla"');
+    $p = $s->objavljeno();
+    $p['tema'] = 'tamna';
+    Podaci::pisiJson($s->datotekaPodataka(), $p);
+    $r = $o->objavi($s->objavljeno(), $pocetak + DAN);
+    jednako($r['nova'], null, 'tema ne stvara novi XML');
+    sadrzi(file_get_contents($s->korijen() . '/index.html'), 'data-tema="tamna"');
+});
+
 /* ---------- Provjera zaštite podataka ---------- */
 
 /** Pokreni poslužitelj nad korijenom stranice; vraća [proces, port]. */

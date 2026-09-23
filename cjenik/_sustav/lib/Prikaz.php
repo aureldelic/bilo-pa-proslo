@@ -127,10 +127,11 @@ final class Prikaz
         $tablica = self::tablica($p, ['datum' => $aktualna['datum'] ?? null]);
         $dana = (int) $p['danaArhive'];
         $css = self::CSS;
+        $tema = ($p['tema'] ?? '') === 'tamna' ? 'tamna' : 'svijetla';
 
         return <<<HTML
 <!doctype html>
-<html lang="hr">
+<html lang="hr" data-tema="$tema">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -138,8 +139,9 @@ final class Prikaz
 <meta name="description" content="$naslov: $naziv, $adresa">
 <link rel="alternate" type="application/xml" href="./cjenik.xml" title="Strojno čitljivi cjenik">
 <style>
-:root{color-scheme:light dark;--pozadina:#faf9f7;--povrsina:#fff;--tekst:#1c1b19;--blago:#6b675f;--rub:#e6e2da}
-@media (prefers-color-scheme:dark){:root{--pozadina:#141413;--povrsina:#1d1d1b;--tekst:#eeece6;--blago:#a19d94;--rub:#34322e}body .cjenik{--cjenik-akcent:#e06058}}
+:root{color-scheme:light;--pozadina:#faf9f7;--povrsina:#fff;--tekst:#1c1b19;--blago:#6b675f;--rub:#e6e2da}
+html[data-tema="tamna"]{color-scheme:dark;--pozadina:#141413;--povrsina:#1d1d1b;--tekst:#eeece6;--blago:#a19d94;--rub:#34322e}
+html[data-tema="tamna"] body .cjenik{--cjenik-akcent:#e06058}
 *{box-sizing:border-box}
 body{margin:0;background:var(--pozadina);color:var(--tekst);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 main{max-width:860px;margin:0 auto;padding:40px 16px 64px}

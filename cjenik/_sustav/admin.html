@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="hr">
+<html lang="hr" data-tema="{{TEMA}}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,6 +11,10 @@
 <div class="traka"><div class="traka-unutra">
   <h1>Cjenik usluga</h1>
   <span id="status" class="status">Učitavanje…</span>
+  <button class="tema-prekidac" id="tema" type="button" aria-label="Promijeni temu">
+    <svg class="ikona-mjesec" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    <svg class="ikona-sunce" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+  </button>
   <a class="gumb" href="../" target="_blank" rel="noopener">Javni cjenik ↗</a>
   <button class="gumb glavni" id="objavi">Objavi cjenik</button>
 </div></div>
@@ -565,6 +569,22 @@ $('#azurirajSada').addEventListener('click', async (e) => {
   try { prikaziAzuriranje(await api('azuriraj', {})); } catch (err) { poruka('Ažuriranje nije uspjelo: ' + err.message, 7000); }
   finally { e.target.disabled = false; }
 });
+
+/* ---------- Tema (svijetla / tamna) ---------- */
+function opisTeme() {
+  const tamna = document.documentElement.dataset.tema === 'tamna';
+  $('#tema').title = `Tema: ${tamna ? 'tamna' : 'svijetla'}. Klikni za ${tamna ? 'svijetlu' : 'tamnu'}. Mijenja izgled ovog sučelja i javne stranice cjenika (/cjenik/). Tablica umetnuta u stranice weba preuzima boje same stranice.`;
+}
+$('#tema').addEventListener('click', async () => {
+  const nova = document.documentElement.dataset.tema === 'tamna' ? 'svijetla' : 'tamna';
+  document.documentElement.dataset.tema = nova;
+  opisTeme();
+  try {
+    await api('tema', { tema: nova });
+    poruka(`Tema je ${nova}. Javna stranica cjenika je osvježena.`);
+  } catch (e) { poruka('Tema nije spremljena: ' + e.message); }
+});
+opisTeme();
 
 /* ---------- Provjera zaštite podataka ---------- */
 async function provjeriZastitu() {

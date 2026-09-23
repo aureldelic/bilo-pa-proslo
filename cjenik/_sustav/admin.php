@@ -171,7 +171,8 @@ function stranica_obrasca(string $naslov, string $sadrzaj): void
 {
     header('Content-Type: text/html; charset=utf-8');
     $css = file_get_contents(__DIR__ . '/admin.css');
-    echo "<!doctype html><html lang=\"hr\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
+    $tema = (new Sustav(dirname(__DIR__)))->objavljeno()['tema'] === 'tamna' ? 'tamna' : 'svijetla';
+    echo "<!doctype html><html lang=\"hr\" data-tema=\"$tema\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
         . '<meta name="robots" content="noindex"><title>' . Util::esc($naslov) . "</title><style>$css</style></head>"
         . '<body class="obrazac-tijelo"><div class="obrazac-okvir"><main class="obrazac karta"><h1>' . Util::esc($naslov) . "</h1>$sadrzaj</main>"
         . '<footer class="podnozje">' . autor() . '</footer></div></body></html>';
@@ -448,6 +449,18 @@ if ($api) {
                 $g = testniMail($s);
                 json_odgovor($g ? 422 : 200, $g ? ['greska' => $g] : ['ok' => true, 'prima' => $auth->email()]);
 
+            case 'tema':
+                $tema = (tijelo()['tema'] ?? '') === 'tamna' ? 'tamna' : 'svijetla';
+                $s->zakljucano(function () use ($s, $tema) {
+                    $p = $s->objavljeno();
+                    $p['tema'] = $tema;
+                    Podaci::pisiJson($s->datotekaPodataka(), $p);
+                });
+                // Javna stranica cjenika odmah dobiva novu temu (XML se ne mijenja).
+                $p = $s->objavljeno();
+                if ($p['objave']) (new Objava($s))->generiraj(Podaci::normaliziraj($p));
+                json_odgovor(200, ['tema' => $tema]);
+
             case 'sigurnost':
                 json_odgovor(200, Sigurnost::provjeri($s, (string) ($s->postavke()['adresa'] ?? Auth::adresaIzZahtjeva())));
 
@@ -492,4 +505,5 @@ echo strtr(file_get_contents(__DIR__ . '/admin.html'), [
     '{{CSRF}}' => $auth->csrf(),
     '{{VERZIJA}}' => Util::esc($s->verzija()),
     '{{AUTOR}}' => autor(),
+    '{{TEMA}}' => $s->objavljeno()['tema'] === 'tamna' ? 'tamna' : 'svijetla',
 ]);
