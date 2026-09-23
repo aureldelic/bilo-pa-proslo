@@ -49,6 +49,8 @@ cjenik/
 
 `_podaci/` i `_sustav/` zaštićeni su preko `.htaccess` (Apache). Podaci su k tome spremljeni kao `.php` datoteke koje počinju s `<?php exit;`, pa nisu čitljivi ni na nginxu.
 
+**Provjera zaštite.** Pri instalaciji i pri svakom otvaranju sučelja plugin preko vlastite javne adrese pokuša pročitati kontrolnu datoteku `_podaci/provjera.php`. Ako je njezin sadržaj vidljiv, poslužitelj izlaže podatke i prikaže se crveno upozorenje s uputom za popravak. Ako poslužitelj ne može poslati zahtjev sam sebi, plugin to napiše i ponudi poveznicu za ručnu provjeru. Kod ugrađenog `php -S` servera za to treba `PHP_CLI_SERVER_WORKERS=4`.
+
 ### Naziv datoteke
 
 Prema pojašnjenju Ministarstva gospodarstva:
@@ -114,8 +116,8 @@ Tablica preuzima font i boju teksta od stranice. Boje se mijenjaju CSS varijabla
 Nova verzija objavljuje se tagom u ovom repozitoriju:
 
 ```bash
-echo "1.1.0" > cjenik/_sustav/VERZIJA
-git commit -am "Verzija 1.1.0" && git tag v1.1.0 && git push origin main v1.1.0
+echo "1.0.2" > cjenik/_sustav/VERZIJA
+git commit -am "Verzija 1.0.2" && git tag v1.0.2 && git push origin main v1.0.2
 ```
 
 GitHub Action pokrene testove na PHP 7.4, napravi `cjenik.zip` i objavi izdanje.
@@ -191,5 +193,5 @@ SMTP lozinka sprema se u `_podaci/postavke.php` (zaštićeno kao i ostali podaci
 ```bash
 php tests/testovi.php                          # testovi
 rsync -a --exclude _podaci --exclude arhiva cjenik/ primjer-stranica/cjenik/
-php -S 127.0.0.1:8089 -t primjer-stranica      # http://127.0.0.1:8089/cjenik/admin/
+PHP_CLI_SERVER_WORKERS=4 php -S 127.0.0.1:8089 -t primjer-stranica   # http://127.0.0.1:8089/cjenik/admin/
 ```

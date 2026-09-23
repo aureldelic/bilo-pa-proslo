@@ -498,5 +498,48 @@ test('provjera dostupnosti PHP mail()', function () {
     jednako(Posta::posiljatelj(['smtp' => ['host' => 'x', 'korisnik' => 'k@a.hr', 'posiljatelj' => 'p@a.hr']]), 'p@a.hr');
 });
 
+/* ---------- Provjera zaštite podataka ---------- */
+
+/** Pokreni poslužitelj nad korijenom stranice; vraća [proces, port]. */
+function posluzitelj(array $naredba, string $korijen): array
+{
+    $port = random_int(40001, 50000);
+    $naredba = array_map(function ($d) use ($port) { return str_replace('{port}', (string) $port, $d); }, $naredba);
+    $proces = proc_open($naredba, [1 => ['file', '/dev/null', 'w'], 2 => ['file', '/dev/null', 'w']], $c, $korijen);
+    for ($i = 0; $i < 50 && !@fsockopen('127.0.0.1', $port); $i++) usleep(100000);
+    return [$proces, $port];
+}
+
+test('provjera zaštite: PHP poslužitelj ne izlaže podatke', function () {
+    $s = instalacija();
+    [$proces, $port] = posluzitelj([PHP_BINARY, '-S', '127.0.0.1:{port}'], $s->stranica());
+    $r = Sigurnost::provjeri($s, "http://127.0.0.1:$port/cjenik/admin/");
+    proc_terminate($proces);
+    jednako($r['stanje'], 'ok', $r['poruka']);
+    jednako($r['url'], "http://127.0.0.1:$port/cjenik/_podaci/provjera.php");
+});
+
+test('provjera zaštite: poslužitelj koji ne izvršava PHP je otkriven', function () {
+    $s = instalacija();
+    [$proces, $port] = posluzitelj(['python3', '-m', 'http.server', '{port}', '--bind', '127.0.0.1'], $s->stranica());
+    $r = Sigurnost::provjeri($s, "http://127.0.0.1:$port/cjenik/admin/");
+    proc_terminate($proces);
+    jednako($r['stanje'], 'izlozeno');
+});
+
+test('provjera zaštite: nedostupan poslužitelj daje "nepoznato"', function () {
+    $s = instalacija();
+    jednako(Sigurnost::provjeri($s, 'http://127.0.0.1:1/cjenik/admin/')['stanje'], 'nepoznato');
+});
+
+test('provjera zaštite uvijek ide na vlastiti poslužitelj (podmetnut Host)', function () {
+    $s = instalacija();
+    [$proces, $port] = posluzitelj([PHP_BINARY, '-S', '127.0.0.1:{port}'], $s->stranica());
+    // Ime domene ne postoji, ali veza ide na IP poslužitelja.
+    $r = Sigurnost::provjeri($s, "http://napadac.invalid:$port/cjenik/admin/", '127.0.0.1');
+    proc_terminate($proces);
+    jednako($r['stanje'], 'ok', $r['poruka']);
+});
+
 echo "\n$prolaz prošlo, $pad palo\n";
 exit($pad ? 1 : 0);

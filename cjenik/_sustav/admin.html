@@ -28,6 +28,7 @@
     <span>Slanje e-maila ne radi: hosting ne podržava PHP mail(), a SMTP nije podešen. Bez toga ne stiže poveznica za zaboravljenu lozinku.</span>
     <button class="gumb mali" data-otvori="smtpHost">Podesi SMTP</button>
   </div>
+  <div class="greske" id="izlozeno" hidden></div>
   <div class="greske" id="greske" hidden></div>
 
   <section class="karta">
@@ -125,6 +126,11 @@
           <button class="gumb mali" id="spremiPostu">Spremi</button>
           <button class="gumb mali" id="testPoste">Pošalji testni e-mail</button>
         </div>
+      </div>
+      <div>
+        <h3>Sigurnost</h3>
+        <p class="opis" id="statusZastite">Provjeravam jesu li podaci zaštićeni…</p>
+        <div class="redak"><button class="gumb mali" id="provjeriZastitu">Provjeri ponovno</button></div>
       </div>
       <div>
         <h3>Prijava</h3>
@@ -559,6 +565,29 @@ $('#azurirajSada').addEventListener('click', async (e) => {
   finally { e.target.disabled = false; }
 });
 
+/* ---------- Provjera zaštite podataka ---------- */
+async function provjeriZastitu() {
+  const el = $('#statusZastite');
+  el.textContent = 'Provjeravam…';
+  try {
+    const r = await api('sigurnost');
+    const b = $('#izlozeno');
+    b.hidden = r.stanje !== 'izlozeno';
+    if (r.stanje === 'izlozeno') {
+      b.innerHTML = '<strong>Upozorenje:</strong> ';
+      b.append(r.poruka + ' Apache: dopusti .htaccess (AllowOverride). nginx: location ~ /cjenik/(_podaci|_sustav)/ { deny all; }');
+      el.innerHTML = '<span class="greska" style="display:block"></span>';
+      el.firstChild.textContent = r.poruka;
+    } else {
+      el.textContent = r.poruka + ' ';
+    }
+    const a = document.createElement('a');
+    a.href = r.url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Provjeri ručno';
+    el.append(a);
+  } catch (e) { el.textContent = 'Provjera nije uspjela: ' + e.message; }
+}
+$('#provjeriZastitu').addEventListener('click', provjeriZastitu);
+
 (async () => {
   const st = await api('stanje');
   podaci = st.podaci;
@@ -568,6 +597,7 @@ $('#azurirajSada').addEventListener('click', async (e) => {
   iscrtajPostavke();
   pregledKorijen.innerHTML = (await api('pregled', nacrt())).html;
   provjeriAzuriranje(false).catch(() => {});
+  provjeriZastitu();
 })();
 </script>
 </body>

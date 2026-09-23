@@ -145,6 +145,19 @@ function podaciPoste(Sustav $s): array
     ];
 }
 
+/** HTML upozorenje ako su podaci javno dostupni (ili provjera nije moguća). */
+function upozorenjeZastite(array $r): string
+{
+    if ($r['stanje'] === 'ok') return '';
+    $url = Util::esc($r['url']);
+    if ($r['stanje'] === 'nepoznato') {
+        return '<p class="opis">' . Util::esc($r['poruka']) . " <a href=\"$url\" target=\"_blank\" rel=\"noopener\">Otvori provjeru</a></p>";
+    }
+    return '<div class="greska"><b>Upozorenje:</b> ' . Util::esc($r['poruka'])
+        . '<br><small>Apache: dopusti <code>.htaccess</code> (AllowOverride). nginx: dodaj <code>location ~ /cjenik/(_podaci|_sustav)/ { deny all; }</code>.'
+        . " Provjera: <a href=\"$url\" target=\"_blank\" rel=\"noopener\">$url</a></small></div>";
+}
+
 /* ---------- Stranice bez prijave: instalacija i prijava ---------- */
 function stranica_obrasca(string $naslov, string $sadrzaj): void
 {
@@ -184,8 +197,10 @@ if (!$auth->instalirano()) {
             exit;
         }
     }
+    $zastita = $dozvole ? ['stanje' => 'ok'] : Sigurnost::provjeri($s, Auth::adresaIzZahtjeva());
     stranica_obrasca('Instalacija cjenika',
-        '<p class="opis">Upiši e-mail i lozinku za uređivanje cjenika. E-mail je korisničko ime i na njega stiže poveznica ako zaboraviš lozinku.</p>'
+        '<p class="korak">Korak 1 od 2</p>' . upozorenjeZastite($zastita)
+        . '<p class="opis">Upiši e-mail i lozinku za uređivanje cjenika. E-mail je korisničko ime i na njega stiže poveznica ako zaboraviš lozinku.</p>'
         . $poruke(array_merge($dozvole, [$greska]))
         . '<form method="post">' . $csrfPolje() . $poljeEmail($email)
         . '<label class="polje">Lozinka (barem 10 znakova)<input type="password" name="lozinka" autocomplete="new-password" required minlength="10"></label>'
@@ -423,6 +438,9 @@ if ($api) {
             case 'posta-test':
                 $g = testniMail($s);
                 json_odgovor($g ? 422 : 200, $g ? ['greska' => $g] : ['ok' => true, 'prima' => $auth->email()]);
+
+            case 'sigurnost':
+                json_odgovor(200, Sigurnost::provjeri($s, (string) ($s->postavke()['adresa'] ?? Auth::adresaIzZahtjeva())));
 
             case 'email':
                 $b = tijelo();

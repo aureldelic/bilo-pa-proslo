@@ -40,7 +40,7 @@ final class Auth
     }
 
     /** Adresa sučelja iz trenutnog zahtjeva (sprema se samo pri instalaciji i uspješnoj prijavi). */
-    private static function adresaIzZahtjeva(): string
+    public static function adresaIzZahtjeva(): string
     {
         $put = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/')), '/') . '/';
         return (self::https() ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . $put;

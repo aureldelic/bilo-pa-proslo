@@ -3,7 +3,7 @@
 
 namespace Cjenik;
 
-foreach (['Util', 'Podaci', 'Arhiva', 'Formati', 'Prikaz', 'Sustav', 'Objava', 'Posta', 'Auth', 'Azuriranje'] as $klasa) {
+foreach (['Util', 'Podaci', 'Arhiva', 'Formati', 'Prikaz', 'Sustav', 'Objava', 'Posta', 'Auth', 'Azuriranje', 'Sigurnost'] as $klasa) {
     require_once __DIR__ . "/lib/$klasa.php";
 }
 
@@ -16,4 +16,5 @@ function zastitiMape(Sustav $s): void
         if (!is_file("$d/.htaccess")) @file_put_contents("$d/.htaccess", $htaccess);
         if (!is_file("$d/index.html")) @file_put_contents("$d/index.html", '');
     }
+    if (is_writable($s->podaci())) Sigurnost::pripremi($s);
 }
