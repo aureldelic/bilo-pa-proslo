@@ -14,8 +14,9 @@ Sve radi na hostingu stranice. Klijent se prijavi u preglednik, upiše usluge i 
 
 1. Preuzmi `cjenik.zip` iz [zadnjeg izdanja](../../releases/latest) i raspakiraj mapu `cjenik/` u korijen web stranice, tako da postoji `https://stranica.hr/cjenik/admin/`.
 2. **Odmah** otvori `https://stranica.hr/cjenik/admin/` i upiši **e-mail i lozinku klijenta**. Dok to nije napravljeno, pristup može preuzeti bilo tko tko otvori tu adresu. E-mail je korisničko ime, a na njega stiže poveznica za novu lozinku.
-3. Pristupne podatke daj klijentu. Klijent može sam promijeniti i e-mail i lozinku u *Postavke → Prijava*.
-4. Po želji u *Postavke → Tablica na stranicama weba* upiši HTML stranice u koje se tablica umeće (vidi niže).
+3. **Drugi korak: slanje e-maila.** Plugin provjeri može li hosting slati mail preko PHP `mail()` i upozori ako ne može. Upiši SMTP podatke nekog sandučića (npr. `noreply@domena.hr`) i klikni *Spremi i pošalji testni e-mail*. Korak se može preskočiti. Ako hosting nema `mail()`, reset lozinke tada neće raditi dok se SMTP ne podesi.
+4. Pristupne podatke daj klijentu. Klijent može sam promijeniti i e-mail i lozinku u *Postavke → Prijava*.
+5. Po želji u *Postavke → Tablica na stranicama weba* upiši HTML stranice u koje se tablica umeće (vidi niže).
 
 Na instalacijskom ekranu plugin javlja ako ne može pisati u svoje mape.
 
@@ -167,7 +168,19 @@ Na ekranu za prijavu je poveznica **Zaboravljena lozinka?**. Klijent upiše svoj
 - Odgovor na ekranu je uvijek isti, pa se ne može provjeriti koji je e-mail registriran.
 - Nova poveznica može se zatražiti najviše jednom u 5 minuta.
 - Adresa u poveznici je ona spremljena pri instalaciji i prijavi, a ne ona iz zahtjeva. Tako je nitko ne može preusmjeriti na svoju domenu.
-- Mail šalje PHP funkcija `mail()` s adrese `noreply@domena-stranice`. Drugi pošiljatelj upisuje se u `_podaci/postavke.php` (ključ `posiljatelj`). Ako hosting ne šalje mail, klijent dobije poruku da se javi webmasteru.
+- Mail ide preko **SMTP-a** ako je podešen (u instalaciji ili u *Postavke → Slanje e-maila*). Inače ide preko PHP `mail()` s adrese `noreply@domena-stranice`. Ako ne radi ništa, klijent dobije poruku da se javi webmasteru, a točan razlog zapiše se u PHP error log.
+
+### Slanje e-maila (SMTP)
+
+SMTP klijent je ugrađen, bez vanjskih biblioteka, i podržava SSL (port 465), STARTTLS (587) i vezu bez šifriranja. Česti podaci:
+
+| Sandučić | Poslužitelj | Port / šifriranje | Napomena |
+|---|---|---|---|
+| Hosting (cPanel, Plesk…) | `mail.domena.hr` | 465 / SSL | korisnik je cijela e-mail adresa |
+| Gmail / Google Workspace | `smtp.gmail.com` | 587 / STARTTLS | treba *lozinka aplikacije* |
+| Microsoft 365 | `smtp.office365.com` | 587 / STARTTLS | SMTP AUTH mora biti dopušten |
+
+SMTP lozinka sprema se u `_podaci/postavke.php` (zaštićeno kao i ostali podaci) i nikad se ne prikazuje u sučelju. Gumb *Pošalji testni e-mail* šalje poruku na e-mail korisnika i prikaže točnu grešku poslužitelja ako slanje ne uspije.
 
 **Ako ni to ne pomaže**, npr. nema pristupa e-mailu: preko FTP-a obriši `cjenik/_podaci/postavke.php` i ponovno otvori `/cjenik/admin/` za novu instalaciju. Cijene i arhiva ostaju; generira se i novi ključ za daljinsko ažuriranje.
 

@@ -87,6 +87,7 @@ pre.kod{padding:10px 12px;white-space:pre-wrap;margin:6px 0 0}
 .greske[hidden],.obavijest[hidden]{display:none}
 .obavijest{background:var(--akcent-blago);color:var(--tekst);border-radius:10px;padding:12px 16px;font-size:.9rem;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .obavijest span{flex:1 1 280px}
+.obavijest.upozorenje{background:var(--upozorenje-blago)}
 .greska{background:var(--greska-blago);color:var(--greska);border-radius:8px;padding:8px 12px;font-size:.88rem}
 .poruka{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;transition:.25s;background:var(--tekst);color:var(--pozadina);padding:12px 18px;border-radius:10px;font-size:.9rem;max-width:min(560px,calc(100vw - 32px));box-shadow:0 8px 30px rgba(0,0,0,.2);pointer-events:none;z-index:10}
 .poruka.vidljiva{opacity:1;transform:translateX(-50%)}
@@ -111,3 +112,12 @@ details.karta summary small{font-weight:400;color:var(--blago);font-size:.82rem}
 .uspjeh{background:var(--akcent-blago);color:var(--tekst);border-radius:8px;padding:10px 12px;font-size:.9rem}
 .donja-poveznica{text-align:center;font-size:.88rem;margin:16px 0 0}
 .donja-poveznica a{color:var(--blago)}
+.korak{font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:var(--akcent);font-weight:700;margin:-4px 0 8px}
+.obrazac.siroki,.obrazac:has(#smtp){width:min(520px,100%)}
+.dva{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.brzi{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0;font-size:.82rem;color:var(--blago)}
+.obrazac .brzi .gumb{width:auto;margin:0}
+details.upute{border:1px solid var(--rub);border-radius:8px;padding:8px 12px;margin:12px 0;font-size:.86rem}
+details.upute summary{cursor:pointer;font-weight:600}
+details.upute p{margin:8px 0;color:var(--blago)}
+.obrazac select{width:100%}

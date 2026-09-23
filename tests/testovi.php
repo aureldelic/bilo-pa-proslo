@@ -341,10 +341,7 @@ test('reset lozinke e-mailom: poveznica koristi spremljenu adresu, jednokratna j
     $a = new Auth($s);
     $a->instaliraj('ana@salonana.hr', 'stara-lozinka-1');
     $poslano = [];
-    Auth::$posalji = function ($prima, $naslov, $tekst, $zaglavlja) use (&$poslano) {
-        $poslano[] = compact('prima', 'naslov', 'tekst', 'zaglavlja');
-        return true;
-    };
+    Posta::$prijevoz = function ($poruka) use (&$poslano) { $poslano[] = $poruka; };
 
     // Nepoznat e-mail: isti odgovor, ništa se ne šalje.
     zahtjev('napadac.com');
@@ -357,7 +354,7 @@ test('reset lozinke e-mailom: poveznica koristi spremljenu adresu, jednokratna j
     jednako($poslano[0]['prima'], 'ana@salonana.hr');
     sadrzi($poslano[0]['tekst'], 'https://salonana.hr/cjenik/admin/?reset=');
     jednako(strpos($poslano[0]['tekst'], 'napadac'), false);
-    sadrzi($poslano[0]['zaglavlja'], 'From: Cjenik <noreply@salonana.hr>');
+    jednako($poslano[0]['od'], 'noreply@salonana.hr');
 
     // Ponovni zahtjev odmah ne šalje novi mail.
     $a->zatraziReset('ana@salonana.hr');
@@ -375,7 +372,7 @@ test('reset lozinke e-mailom: poveznica koristi spremljenu adresu, jednokratna j
     zahtjev();
     jednako($a->prijava('ana@salonana.hr', 'stara-lozinka-1'), 'Pogrešan e-mail ili lozinka.');
     jednako($a->prijava('ana@salonana.hr', 'nova-lozinka-22'), null);
-    Auth::$posalji = null;
+    Posta::$prijevoz = null;
 });
 
 test('reset poveznica istječe nakon sat vremena', function () {
@@ -384,9 +381,9 @@ test('reset poveznica istječe nakon sat vremena', function () {
     $a = new Auth($s);
     $a->instaliraj('ana@salonana.hr', 'stara-lozinka-1');
     $tekst = '';
-    Auth::$posalji = function ($prima, $naslov, $t) use (&$tekst) { $tekst = $t; return true; };
+    Posta::$prijevoz = function ($poruka) use (&$tekst) { $tekst = $poruka['tekst']; };
     $a->zatraziReset('ana@salonana.hr');
-    Auth::$posalji = null;
+    Posta::$prijevoz = null;
     preg_match('/reset=([a-f0-9]+)/', $tekst, $m);
     $p = $s->postavke();
     $p['reset']['istjece'] = time() - 1;
@@ -400,9 +397,9 @@ test('neuspjelo slanje e-maila javlja grešku i poništava poveznicu', function 
     zahtjev();
     $a = new Auth($s);
     $a->instaliraj('ana@salonana.hr', 'stara-lozinka-1');
-    Auth::$posalji = function () { return false; };
+    Posta::$prijevoz = function () { throw new \RuntimeException('ne radi'); };
     sadrzi((string) $a->zatraziReset('ana@salonana.hr'), 'nije uspjelo');
-    Auth::$posalji = null;
+    Posta::$prijevoz = null;
     jednako(isset($s->postavke()['reset']), false);
 });
 
@@ -419,6 +416,86 @@ test('promjena e-maila traži lozinku; stara instalacija bez e-maila radi', func
     unset($p['email']);
     $s->spremiPostavke($p);
     jednako($a->prijava('', 'stara-lozinka-1'), null, 'v1.0.0 instalacija');
+});
+
+/* ---------- Slanje e-maila ---------- */
+
+/** Pokreni lažni SMTP poslužitelj; vraća [port, izlazna datoteka, proces]. */
+function lazniSmtp(): array
+{
+    $port = random_int(20000, 40000);
+    $izlaz = sys_get_temp_dir() . '/smtp-' . bin2hex(random_bytes(4)) . '.json';
+    $proces = proc_open([PHP_BINARY, __DIR__ . '/lazni-smtp.php', (string) $port, $izlaz], [1 => ['pipe', 'w']], $cijevi);
+    fgets($cijevi[1]);
+    return [$port, $izlaz, $proces];
+}
+
+test('SMTP: prijava, pošiljatelj, primatelj i UTF-8 poruka', function () {
+    [$port, $izlaz, $proces] = lazniSmtp();
+    Posta::posaljiSmtp(
+        ['host' => '127.0.0.1', 'port' => $port, 'sifriranje' => 'nema', 'korisnik' => 'noreply@salonana.hr', 'lozinka' => 'tajna'],
+        ['od' => 'noreply@salonana.hr', 'ime' => 'Cjenik', 'prima' => "ana@salonana.hr\r\nBcc: zlo@x.hr", 'naslov' => 'Nova lozinka – čćžšđ',
+         'tekst' => "Pozdrav\n.\nčćžšđ", 'domena' => 'salonana.hr']
+    );
+    proc_close($proces);
+    $z = json_decode(file_get_contents($izlaz), true);
+    jednako($z['naredbe'][0], 'EHLO salonana.hr');
+    jednako(in_array('MAIL FROM:<noreply@salonana.hr>', $z['naredbe'], true), true);
+    jednako(in_array('RCPT TO:<ana@salonana.hr  Bcc: zlo@x.hr>', $z['naredbe'], true), true, 'CRLF uklonjen, nema injekcije');
+    jednako(strpos($z['data'], "\nBcc:"), false);
+    sadrzi($z['data'], 'Subject: =?UTF-8?B?' . base64_encode('Nova lozinka – čćžšđ') . '?=');
+    [$zaglavlja, $tijelo] = explode("\r\n\r\n", $z['data'], 2);
+    jednako(base64_decode($tijelo), "Pozdrav\n.\nčćžšđ");
+});
+
+test('SMTP: kriva lozinka daje razumljivu grešku', function () {
+    [$port, $izlaz, $proces] = lazniSmtp();
+    try {
+        Posta::posaljiSmtp(
+            ['host' => '127.0.0.1', 'port' => $port, 'sifriranje' => 'nema', 'korisnik' => 'noreply@salonana.hr', 'lozinka' => 'kriva'],
+            ['od' => 'noreply@salonana.hr', 'ime' => 'Cjenik', 'prima' => 'ana@salonana.hr', 'naslov' => 'x', 'tekst' => 'x', 'domena' => 'salonana.hr']
+        );
+        throw new \Exception('nije bacio grešku');
+    } catch (\RuntimeException $e) {
+        sadrzi($e->getMessage(), 'Provjeri korisničko ime i lozinku');
+        sadrzi($e->getMessage(), '535');
+    }
+    proc_terminate($proces);
+});
+
+test('SMTP: nedostupan poslužitelj', function () {
+    try {
+        Posta::posaljiSmtp(['host' => '127.0.0.1', 'port' => 1, 'sifriranje' => 'nema'],
+            ['od' => 'a@b.hr', 'ime' => 'C', 'prima' => 'c@d.hr', 'naslov' => 'x', 'tekst' => 'x', 'domena' => 'b.hr']);
+        throw new \Exception('nije bacio grešku');
+    } catch (\RuntimeException $e) {
+        sadrzi($e->getMessage(), 'ne mogu se spojiti na 127.0.0.1:1');
+    }
+});
+
+test('reset lozinke ide preko podešenog SMTP-a', function () {
+    $s = instalacija();
+    zahtjev();
+    $a = new Auth($s);
+    $a->instaliraj('ana@salonana.hr', 'stara-lozinka-1');
+    jednako(!empty($s->postavke()['korakPosta']), true, 'nakon instalacije slijedi korak slanja e-maila');
+    [$port, $izlaz, $proces] = lazniSmtp();
+    $p = $s->postavke();
+    $p['smtp'] = ['host' => '127.0.0.1', 'port' => $port, 'sifriranje' => 'nema', 'korisnik' => 'noreply@salonana.hr', 'lozinka' => 'tajna', 'posiljatelj' => ''];
+    $s->spremiPostavke($p);
+    jednako($a->zatraziReset('ana@salonana.hr'), null);
+    proc_close($proces);
+    $z = json_decode(file_get_contents($izlaz), true);
+    jednako(in_array('RCPT TO:<ana@salonana.hr>', $z['naredbe'], true), true);
+    [, $tijelo] = explode("\r\n\r\n", $z['data'], 2);
+    sadrzi(base64_decode($tijelo), 'https://salonana.hr/cjenik/admin/?reset=');
+});
+
+test('provjera dostupnosti PHP mail()', function () {
+    jednako(in_array(Posta::mailDostupan(), ['da', 'ne'], true), true);
+    jednako(Posta::posiljatelj(['adresa' => 'https://www.salonana.hr/cjenik/admin/']), 'noreply@salonana.hr');
+    jednako(Posta::posiljatelj(['smtp' => ['host' => 'x', 'korisnik' => 'k@a.hr', 'posiljatelj' => '']]), 'k@a.hr');
+    jednako(Posta::posiljatelj(['smtp' => ['host' => 'x', 'korisnik' => 'k@a.hr', 'posiljatelj' => 'p@a.hr']]), 'p@a.hr');
 });
 
 echo "\n$prolaz prošlo, $pad palo\n";

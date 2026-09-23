@@ -68,6 +68,83 @@ if ($api === 'daljinsko-azuriranje') {
 
 $auth->pokreniSesiju();
 
+/* ---------- Slanje e-maila (SMTP) ---------- */
+
+/** Spremi SMTP podatke iz obrasca/API-ja. Prazan poslužitelj briše SMTP. Lozinka se mijenja samo ako je upisana. */
+function spremiSmtp(Sustav $s, array $b): ?string
+{
+    $post = $s->postavke();
+    $host = trim((string) ($b['host'] ?? ''));
+    if ($host === '') {
+        unset($post['smtp']);
+        $s->spremiPostavke($post);
+        return null;
+    }
+    $sifriranje = in_array($b['sifriranje'] ?? '', ['ssl', 'tls', 'nema'], true) ? $b['sifriranje'] : 'ssl';
+    $port = (int) ($b['port'] ?? 0) ?: ($sifriranje === 'ssl' ? 465 : 587);
+    $posiljatelj = Auth::normalizirajEmail((string) ($b['posiljatelj'] ?? ''));
+    $korisnik = trim((string) ($b['korisnik'] ?? ''));
+    if (!preg_match('/^[a-z0-9.-]+$/i', $host)) return 'Poslužitelj smije sadržavati samo slova, brojke, točke i crtice (npr. mail.domena.hr).';
+    if ($port < 1 || $port > 65535) return 'Neispravan port.';
+    if ($posiljatelj !== '' && !Auth::ispravanEmail($posiljatelj)) return 'Adresa pošiljatelja nije ispravan e-mail.';
+    if ($posiljatelj === '' && !Auth::ispravanEmail($korisnik)) return 'Upiši adresu pošiljatelja (korisničko ime nije e-mail adresa).';
+    $stari = $post['smtp'] ?? [];
+    $lozinka = (string) ($b['lozinka'] ?? '');
+    $post['smtp'] = [
+        'host' => $host,
+        'port' => $port,
+        'sifriranje' => $sifriranje,
+        'korisnik' => $korisnik,
+        'lozinka' => $lozinka !== '' ? $lozinka : (($stari['host'] ?? '') !== '' ? ($stari['lozinka'] ?? '') : ''),
+        'posiljatelj' => $posiljatelj,
+        'ime' => 'Cjenik',
+    ];
+    $s->spremiPostavke($post);
+    return null;
+}
+
+/** Testni mail na e-mail korisnika. Sa SMTP-om ide samo preko SMTP-a, da se vidi točna greška. */
+function testniMail(Sustav $s): ?string
+{
+    $post = $s->postavke();
+    $prima = (string) ($post['email'] ?? '');
+    if ($prima === '') return 'Prvo upiši svoj e-mail (Postavke → Prijava).';
+    $domena = Posta::domena($post);
+    $tekst = "Ovo je testna poruka s cjenika na $domena.\n\nAko je čitaš, slanje e-maila radi i poveznica za zaboravljenu lozinku stići će na ovu adresu.\n";
+    try {
+        if ($smtp = Posta::smtp($post)) {
+            if (Posta::$prijevoz) {
+                Posta::posalji($post, $prima, "Testni e-mail s cjenika ($domena)", $tekst);
+            } else {
+                Posta::posaljiSmtp($smtp, ['od' => Posta::posiljatelj($post), 'ime' => 'Cjenik', 'prima' => $prima,
+                    'naslov' => "Testni e-mail s cjenika ($domena)", 'tekst' => $tekst, 'domena' => $domena]);
+            }
+        } else {
+            Posta::posalji($post, $prima, "Testni e-mail s cjenika ($domena)", $tekst);
+        }
+        return null;
+    } catch (\RuntimeException $e) {
+        return 'Slanje nije uspjelo: ' . $e->getMessage();
+    }
+}
+
+/** SMTP podaci za prikaz (bez lozinke). */
+function podaciPoste(Sustav $s): array
+{
+    $post = $s->postavke();
+    $smtp = $post['smtp'] ?? [];
+    return [
+        'host' => $smtp['host'] ?? '',
+        'port' => $smtp['port'] ?? '',
+        'sifriranje' => $smtp['sifriranje'] ?? 'ssl',
+        'korisnik' => $smtp['korisnik'] ?? '',
+        'posiljatelj' => $smtp['posiljatelj'] ?? '',
+        'imaLozinku' => !empty($smtp['lozinka']),
+        'mail' => Posta::mailDostupan(),
+        'domena' => Posta::domena($post),
+    ];
+}
+
 /* ---------- Stranice bez prijave: instalacija i prijava ---------- */
 function stranica_obrasca(string $naslov, string $sadrzaj): void
 {
@@ -178,6 +255,69 @@ if (!$auth->prijavljen()) {
         . ($imaEmail ? '<p class="donja-poveznica"><a href="./?zaboravljena">Zaboravljena lozinka?</a></p>' : ''));
 }
 
+/* ---------- Korak 2 instalacije: slanje e-maila ---------- */
+if (!$api && !empty($s->postavke()['korakPosta'])) {
+    $greska = '';
+    $uspjeh = '';
+    $unos = $metoda === 'POST' ? $_POST : podaciPoste($s);
+    if ($metoda === 'POST') {
+        if (!$auth->provjeriCsrf($_POST['csrf'] ?? null)) {
+            $greska = 'Istekla sesija, pokušaj ponovno.';
+        } elseif (isset($_POST['preskoci']) || isset($_POST['nastavi'])) {
+            $post = $s->postavke();
+            unset($post['korakPosta']);
+            $s->spremiPostavke($post);
+            header('Location: ./');
+            exit;
+        } elseif (trim((string) ($_POST['host'] ?? '')) === '') {
+            $greska = 'Upiši poslužitelj (npr. mail.' . Posta::domena($s->postavke()) . ') ili klikni Preskoči.';
+        } elseif (($greska = spremiSmtp($s, $_POST)) === null && ($greska = testniMail($s)) === null) {
+            $uspjeh = 'Testni e-mail je poslan na ' . $auth->email() . '. Provjeri je li stigao (i u neželjenoj pošti).';
+        }
+    }
+    $pp = podaciPoste($s);
+    $v = function ($k) use ($unos) { return Util::esc((string) ($unos[$k] ?? '')); };
+    $sif = (string) ($unos['sifriranje'] ?? 'ssl');
+    $opcija = function ($vr, $tekst) use ($sif) { return "<option value=\"$vr\"" . ($sif === $vr ? ' selected' : '') . ">$tekst</option>"; };
+    $domena = Util::esc($pp['domena']);
+
+    $status = $pp['mail'] === 'ne'
+        ? '<p class="greska"><b>Ovaj hosting ne podržava slanje preko PHP mail().</b> Dok ne upišeš SMTP podatke, slanje e-maila neće raditi, pa ni poveznica za zaboravljenu lozinku.</p>'
+        : '<p class="uspjeh">Hosting podržava slanje preko PHP mail(), pa će slanje raditi i bez SMTP-a. Takvi mailovi ipak često završe u neželjenoj pošti, pa je SMTP pouzdaniji.</p>';
+
+    if ($uspjeh) {
+        stranica_obrasca('Slanje e-maila radi', '<p class="korak">Korak 2 od 2</p><p class="uspjeh">' . Util::esc($uspjeh) . '</p>'
+            . '<form method="post">' . $csrfPolje() . '<button class="gumb glavni" name="nastavi" value="1">Nastavi na cjenik</button></form>'
+            . '<p class="donja-poveznica">Nije stigao? Podatke možeš promijeniti u <i>Postavke → Slanje e-maila</i>.</p>');
+    }
+
+    stranica_obrasca('Slanje e-maila', '<p class="korak">Korak 2 od 2</p>'
+        . '<p class="opis">Plugin šalje e-mail samo kad netko zaboravi lozinku: na <b>' . Util::esc($auth->email()) . '</b> stiže poveznica za novu. '
+        . 'Za pouzdano slanje upiši SMTP podatke nekog e-mail sandučića, npr. <i>noreply@' . $domena . '</i>.</p>'
+        . $status . $poruke([$greska])
+        . '<details class="upute"><summary>Gdje naći SMTP podatke?</summary>'
+        . '<p><b>E-mail na hostingu (cPanel, Plesk…)</b>: poslužitelj je obično <code>mail.' . $domena . '</code>, port 465 sa SSL-om. Korisničko ime je cijela e-mail adresa, a lozinka je lozinka tog sandučića. U cPanelu: <i>Email Accounts → Connect Devices</i>.</p>'
+        . '<p><b>Gmail / Google Workspace</b>: <code>smtp.gmail.com</code>, port 587, TLS. Umjesto obične lozinke treba <i>lozinka aplikacije</i> (Google račun → Sigurnost → Potvrda u 2 koraka → Lozinke aplikacija).</p>'
+        . '<p><b>Microsoft 365 / Outlook</b>: <code>smtp.office365.com</code>, port 587, TLS. Administrator mora za taj sandučić dopustiti SMTP AUTH.</p>'
+        . '</details>'
+        . '<div class="brzi" id="brzi"><span>Brzi odabir:</span>'
+        . '<button type="button" class="gumb mali" data-host="mail.' . $domena . '" data-port="465" data-sif="ssl">Hosting</button>'
+        . '<button type="button" class="gumb mali" data-host="smtp.gmail.com" data-port="587" data-sif="tls">Gmail</button>'
+        . '<button type="button" class="gumb mali" data-host="smtp.office365.com" data-port="587" data-sif="tls">Microsoft 365</button></div>'
+        . '<form method="post" id="smtp">' . $csrfPolje()
+        . '<label class="polje">SMTP poslužitelj<input type="text" name="host" value="' . $v('host') . '" placeholder="mail.' . $domena . '" autocomplete="off"></label>'
+        . '<div class="dva"><label class="polje">Port<input type="number" name="port" value="' . $v('port') . '" placeholder="465"></label>'
+        . '<label class="polje">Šifriranje<select name="sifriranje">' . $opcija('ssl', 'SSL (465)') . $opcija('tls', 'STARTTLS (587)') . $opcija('nema', 'Bez šifriranja') . '</select></label></div>'
+        . '<label class="polje">Korisničko ime (obično cijela e-mail adresa)<input type="text" name="korisnik" value="' . $v('korisnik') . '" placeholder="noreply@' . $domena . '" autocomplete="off"></label>'
+        . '<label class="polje">Lozinka sandučića<input type="password" name="lozinka" autocomplete="new-password"' . ($pp['imaLozinku'] ? ' placeholder="spremljena — upiši samo za promjenu"' : '') . '></label>'
+        . '<label class="polje">Adresa pošiljatelja (neobavezno, zadano je korisničko ime)<input type="email" name="posiljatelj" value="' . $v('posiljatelj') . '"></label>'
+        . '<button class="gumb glavni" type="submit">Spremi i pošalji testni e-mail</button>'
+        . '<button class="gumb" type="submit" name="preskoci" value="1" formnovalidate style="margin-top:8px">'
+        . ($pp['mail'] === 'ne' ? 'Preskoči (reset lozinke neće raditi)' : 'Preskoči i koristi PHP mail()') . '</button>'
+        . '</form>'
+        . "<script>document.getElementById('brzi').addEventListener('click',function(e){var b=e.target.closest('[data-host]');if(!b)return;var f=document.getElementById('smtp');f.host.value=b.dataset.host;f.port.value=b.dataset.port;f.sifriranje.value=b.dataset.sif;f.korisnik.focus();});</script>");
+}
+
 /* ---------- API (prijavljen korisnik) ---------- */
 function stanje(Sustav $s): array
 {
@@ -200,6 +340,7 @@ function stanje(Sustav $s): array
             'automatskoAzuriranje' => !empty($post['automatskoAzuriranje']),
             'kljucAzuriranja' => $post['kljucAzuriranja'] ?? '',
             'email' => $post['email'] ?? '',
+            'posta' => podaciPoste($s),
             'php' => PHP_VERSION,
         ],
     ];
@@ -274,6 +415,14 @@ if ($api) {
                 $b = tijelo();
                 $g = $auth->promijeniLozinku((string) ($b['stara'] ?? ''), (string) ($b['nova'] ?? ''));
                 json_odgovor($g ? 422 : 200, $g ? ['greska' => $g] : ['ok' => true]);
+
+            case 'posta':
+                $g = spremiSmtp($s, tijelo());
+                json_odgovor($g ? 422 : 200, $g ? ['greska' => $g] : stanje($s));
+
+            case 'posta-test':
+                $g = testniMail($s);
+                json_odgovor($g ? 422 : 200, $g ? ['greska' => $g] : ['ok' => true, 'prima' => $auth->email()]);
 
             case 'email':
                 $b = tijelo();

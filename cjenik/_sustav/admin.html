@@ -24,6 +24,10 @@
     <span>Upiši svoj e-mail u <b>Postavke → Prijava</b>. Bez njega ne možeš sam postaviti novu lozinku ako je zaboraviš.</span>
     <button class="gumb mali" id="otvoriPostavke">Otvori postavke</button>
   </div>
+  <div class="obavijest upozorenje" id="bezPoste" hidden>
+    <span>Slanje e-maila ne radi: hosting ne podržava PHP mail(), a SMTP nije podešen. Bez toga ne stiže poveznica za zaboravljenu lozinku.</span>
+    <button class="gumb mali" data-otvori="smtpHost">Podesi SMTP</button>
+  </div>
   <div class="greske" id="greske" hidden></div>
 
   <section class="karta">
@@ -105,6 +109,22 @@
         <p class="opis" style="margin-top:12px">Daljinsko ažuriranje (npr. za sve stranice odjednom):</p>
         <pre class="kod" id="naredbaAzuriranja"></pre>
         <div class="redak"><button class="gumb mali" id="noviKljuc">Novi ključ</button></div>
+      </div>
+      <div>
+        <h3>Slanje e-maila</h3>
+        <p class="opis" id="statusPoste"></p>
+        <label class="polje">SMTP poslužitelj (prazno = bez SMTP-a)<input type="text" id="smtpHost" autocomplete="off"></label>
+        <div class="dva">
+          <label class="polje">Port<input type="number" id="smtpPort"></label>
+          <label class="polje">Šifriranje<select id="smtpSifriranje"><option value="ssl">SSL (465)</option><option value="tls">STARTTLS (587)</option><option value="nema">Bez šifriranja</option></select></label>
+        </div>
+        <label class="polje">Korisničko ime<input type="text" id="smtpKorisnik" autocomplete="off"></label>
+        <label class="polje">Lozinka sandučića<input type="password" id="smtpLozinka" autocomplete="new-password"></label>
+        <label class="polje">Adresa pošiljatelja (neobavezno)<input type="email" id="smtpPosiljatelj"></label>
+        <div class="redak">
+          <button class="gumb mali" id="spremiPostu">Spremi</button>
+          <button class="gumb mali" id="testPoste">Pošalji testni e-mail</button>
+        </div>
       </div>
       <div>
         <h3>Prijava</h3>
@@ -277,6 +297,19 @@ function iscrtajPostavke() {
   $('#automatskoAzuriranje').checked = !!sustav.automatskoAzuriranje;
   $('#email').value = sustav.email || '';
   $('#bezEmaila').hidden = !!sustav.email;
+  const po = sustav.posta;
+  $('#smtpHost').value = po.host;
+  $('#smtpPort').value = po.port;
+  $('#smtpSifriranje').value = po.sifriranje;
+  $('#smtpKorisnik').value = po.korisnik;
+  $('#smtpPosiljatelj').value = po.posiljatelj;
+  $('#smtpLozinka').value = '';
+  $('#smtpLozinka').placeholder = po.imaLozinku ? 'spremljena, upiši samo za promjenu' : '';
+  const sp = $('#statusPoste');
+  if (po.host) sp.textContent = `E-mail se šalje preko SMTP-a (${po.host}).`;
+  else if (po.mail === 'ne') sp.innerHTML = '<span class="greska" style="display:block">Hosting ne podržava PHP mail(). Dok ne upišeš SMTP podatke, slanje e-maila (i reset lozinke) neće raditi.</span>';
+  else sp.textContent = 'SMTP nije podešen, e-mail se šalje preko PHP mail() (može završiti u neželjenoj pošti).';
+  $('#bezPoste').hidden = !(po.mail === 'ne' && !po.host);
 }
 
 function iducaDatoteka() {
@@ -463,10 +496,38 @@ $('#promijeniEmail').addEventListener('click', async () => {
     poruka('E-mail je spremljen.');
   } catch (e) { poruka('Greška: ' + e.message); }
 });
-$('#otvoriPostavke').addEventListener('click', () => {
+function otvoriPolje(id) {
   $('#napredno').open = true;
-  $('#email').scrollIntoView({ behavior: 'smooth', block: 'center' });
-  $('#email').focus();
+  $('#' + id).scrollIntoView({ behavior: 'smooth', block: 'center' });
+  $('#' + id).focus();
+}
+$('#otvoriPostavke').addEventListener('click', () => otvoriPolje('email'));
+document.querySelectorAll('[data-otvori]').forEach((b) => b.addEventListener('click', () => otvoriPolje(b.dataset.otvori)));
+
+function podaciSmtp() {
+  return {
+    host: $('#smtpHost').value, port: $('#smtpPort').value, sifriranje: $('#smtpSifriranje').value,
+    korisnik: $('#smtpKorisnik').value, lozinka: $('#smtpLozinka').value, posiljatelj: $('#smtpPosiljatelj').value,
+  };
+}
+$('#spremiPostu').addEventListener('click', async () => {
+  try {
+    const r = await api('posta', podaciSmtp());
+    sustav = r.sustav;
+    iscrtajPostavke();
+    poruka('Podaci za slanje e-maila su spremljeni.');
+  } catch (e) { poruka(e.message, 7000); }
+});
+$('#testPoste').addEventListener('click', async (e) => {
+  e.target.disabled = true;
+  try {
+    const r0 = await api('posta', podaciSmtp());
+    sustav = r0.sustav;
+    iscrtajPostavke();
+    const r = await api('posta-test', {});
+    poruka(`Testni e-mail je poslan na ${r.prima}. Provjeri je li stigao (i u neželjenoj pošti).`, 7000);
+  } catch (err) { poruka(err.message, 9000); }
+  finally { e.target.disabled = false; }
 });
 $('#odjava').addEventListener('click', async () => { await api('odjava', {}); location.reload(); });
 

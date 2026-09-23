@@ -14,12 +14,6 @@ final class Auth
     /** @var Sustav */
     private $s;
 
-    /**
-     * Slanje e-maila; testovi ga zamijene.
-     * @var callable|null fn(string $prima, string $naslov, string $tekst, string $zaglavlja): bool
-     */
-    public static $posalji = null;
-
     public function __construct(Sustav $s)
     {
         $this->s = $s;
@@ -118,6 +112,7 @@ final class Auth
             $p['adresa'] = self::adresaIzZahtjeva();
             $p['kljucAzuriranja'] = $p['kljucAzuriranja'] ?? bin2hex(random_bytes(20));
             $p['automatskoAzuriranje'] = $p['automatskoAzuriranje'] ?? true;
+            $p['korakPosta'] = true; // sljedeći korak instalacije: podaci za slanje e-maila
             $this->s->spremiPostavke($p);
             $this->oznaciPrijavu($p);
             return null;
@@ -219,29 +214,18 @@ final class Auth
         $p['reset'] = ['hash' => hash('sha256', $token), 'istjece' => time() + self::RESET_TRAJE, 'poslano' => time()];
         $this->s->spremiPostavke($p);
 
-        // Adresa spremljena pri instalaciji, NE iz zahtjeva (zaštita od podmetanja Host zaglavlja).
+        // Adresa spremljena pri instalaciji/prijavi, NE iz zahtjeva (zaštita od podmetanja Host zaglavlja).
         $poveznica = ($p['adresa'] ?? '') . '?reset=' . $token;
-        $domena = parse_url((string) ($p['adresa'] ?? ''), PHP_URL_HOST) ?: 'localhost';
-        $domena = preg_replace('/^www\./', '', $domena);
-        $posiljatelj = $p['posiljatelj'] ?? ('noreply@' . $domena);
+        $domena = Posta::domena($p);
         $tekst = "Pozdrav,\n\nzatražena je nova lozinka za uređivanje cjenika na $domena.\n\n"
             . "Novu lozinku postavi preko ove poveznice (vrijedi 1 sat):\n$poveznica\n\n"
             . "Ako nisi ti zatražio/la novu lozinku, zanemari ovu poruku. Stara lozinka i dalje vrijedi.\n";
-        $zaglavlja = implode("\r\n", [
-            'From: Cjenik <' . $posiljatelj . '>',
-            'MIME-Version: 1.0',
-            'Content-Type: text/plain; charset=UTF-8',
-            'Content-Transfer-Encoding: 8bit',
-        ]);
-        $naslov = '=?UTF-8?B?' . base64_encode("Nova lozinka za cjenik ($domena)") . '?=';
-
-        $posalji = self::$posalji ?? function ($prima, $naslov, $tekst, $zaglavlja) use ($posiljatelj) {
-            // Neki hostinzi ne dopuštaju -f; tada pokušaj bez njega.
-            return @mail($prima, $naslov, $tekst, $zaglavlja, '-f' . $posiljatelj) || @mail($prima, $naslov, $tekst, $zaglavlja);
-        };
-        if (!$posalji($email, $naslov, $tekst, $zaglavlja)) {
+        try {
+            Posta::posalji($p, $email, "Nova lozinka za cjenik ($domena)", $tekst);
+        } catch (\RuntimeException $e) {
             unset($p['reset']);
             $this->s->spremiPostavke($p);
+            error_log('Cjenik: slanje e-maila nije uspjelo: ' . $e->getMessage());
             return 'Slanje e-maila nije uspjelo. Javi se webmasteru.';
         }
         return null;

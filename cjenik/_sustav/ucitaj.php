@@ -3,7 +3,7 @@
 
 namespace Cjenik;
 
-foreach (['Util', 'Podaci', 'Arhiva', 'Formati', 'Prikaz', 'Sustav', 'Objava', 'Auth', 'Azuriranje'] as $klasa) {
+foreach (['Util', 'Podaci', 'Arhiva', 'Formati', 'Prikaz', 'Sustav', 'Objava', 'Posta', 'Auth', 'Azuriranje'] as $klasa) {
     require_once __DIR__ . "/lib/$klasa.php";
 }
 
