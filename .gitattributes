@@ -1,0 +1,6 @@
+tests/ export-ignore
+alati/ export-ignore
+docs/ export-ignore
+.github/ export-ignore
+.gitignore export-ignore
+.gitattributes export-ignore

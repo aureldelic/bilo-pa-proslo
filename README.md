@@ -217,7 +217,12 @@ SMTP lozinka sprema se u `_podaci/postavke.php` (zaštićeno kao i ostali podaci
 ## Razvoj
 
 ```bash
-php tests/testovi.php                          # testovi
+php tests/testovi.php        # testovi
+
+# lokalno isprobavanje: mapa primjer-stranica/ nije u repozitoriju
+mkdir -p primjer-stranica && echo '<h1>Primjer</h1><!-- cjenik:pocetak --><!-- cjenik:kraj -->' > primjer-stranica/index.html
 rsync -a --exclude _podaci --exclude arhiva cjenik/ primjer-stranica/cjenik/
 PHP_CLI_SERVER_WORKERS=4 php -S 127.0.0.1:8089 -t primjer-stranica   # http://127.0.0.1:8089/cjenik/admin/
 ```
+
+Automatski paketi *Source code* na stranici izdanja ne sadrže testove, alate ni slike iz `docs/` (`.gitattributes`). Za instalaciju se ionako koristi `bilo-pa-proslo.zip`.
