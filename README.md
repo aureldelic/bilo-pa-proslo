@@ -1,38 +1,35 @@
-# Cjenik sa sidrenim cijenama za statične web stranice
+# Cjenik sa sidrenim cijenama (PHP plugin za web stranice)
 
-Alat za objavu cjenika usluga prema odlukama iz NN 101/26 koje vrijede od 1. listopada 2026.:
+Plugin za objavu cjenika usluga prema odlukama iz NN 101/26 koje vrijede od 1. listopada 2026.:
 
-- **isticanje dodatne (sidrene) cijene** na dan 10. rujna 2026. uz trenutnu cijenu, u istoj tablici,
-- **strojno čitljivi cjenik** (XML, po želji i CSV) s propisanim nazivom datoteke,
-- **arhiva cjenika** koja čuva prethodne cjenike najmanje 30 dana.
+- **dodatna (sidrena) cijena** na dan 10. rujna 2026. uz trenutnu cijenu, u istoj tablici,
+- **strojno čitljivi cjenik** (XML, po želji i CSV) s nazivom datoteke kakav traži ministarstvo,
+- **arhiva cjenika** koja prethodne cjenike čuva najmanje 30 dana, a starije **briše sama**.
 
-Radi s bilo kojom statičnom stranicom (običan HTML, Hugo, Jekyll, Eleventy, Astro…). Ne treba baza ni PHP. Treba samo Node.js 18+ na računalu na kojem se cjenik uređuje. Nema vanjskih paketa.
+Sve radi na hostingu stranice. Klijent se prijavi u preglednik, upiše usluge i cijene i klikne *Objavi*. Ništa ne mora uploadati ni instalirati. Plugin se ažurira sam s GitHuba.
 
-## Brzi početak
+**Zahtjevi:** PHP 7.4 ili noviji (radi na običnom shared hostingu) i PHP modul `zip` (za ažuriranje). Baza nije potrebna. Stranica može biti potpuno statična (HTML); PHP treba samo mapi `cjenik/`.
 
-```bash
-cd moja-web-stranica
-node /putanja/do/cjenik-sidrene-cijene/bin/cjenik.js admin
-```
+## Instalacija (jednom po stranici)
 
-Ako alat instaliraš globalno (`npm link` u mapi alata), možeš pisati samo `cjenik admin`.
+1. Preuzmi `cjenik.zip` iz [zadnjeg izdanja](../../releases/latest) i raspakiraj mapu `cjenik/` u korijen web stranice, tako da postoji `https://stranica.hr/cjenik/admin/`.
+2. **Odmah** otvori `https://stranica.hr/cjenik/admin/` i postavi lozinku. Dok lozinka nije postavljena, može je postaviti bilo tko tko otvori tu adresu.
+3. Lozinku daj klijentu.
+4. Po želji u *Postavke → Tablica na stranicama weba* upiši HTML stranice u koje se tablica umeće (vidi niže).
 
-U pregledniku se otvara sučelje (`http://localhost:4321`). U njemu:
+Na instalacijskom ekranu plugin javlja ako ne može pisati u svoje mape.
 
-1. Upiši podatke o obrtu i objektu: naziv, oblik objekta (npr. *salon*, *servis*), adresu i oznaku.
-2. Za svaku uslugu upiši **opis**, **trenutnu cijenu** i **cijenu na 10.9.2026.** Ako se cijena nije mijenjala, obje su iste; kad upišeš trenutnu cijenu, sidrena se sama predloži.
-3. Klikni **Objavi cjenik**.
-4. Mapu `cjenik/` prenesi na server, kao i ostatak stranice (FTP, rsync, git…).
+## Kako klijent radi
 
-Sve se sprema u `cjenik.json` u mapi projekta.
+Na adresi `https://stranica.hr/cjenik/admin/` se prijavi lozinkom i uredi:
 
-Za skripte i cron postoji i objava bez sučelja:
+- **Obrt i objekt:** naziv, oblik objekta (salon, servis, ured…), adresa i oznaka. Ti podaci ulaze u naziv datoteke.
+- **Usluge:** opis, trenutna cijena i cijena na 10.9.2026. Kad se upiše trenutna cijena, sidrena se predloži sama. Neobavezno se dodaju kategorija, jedinica i akcija.
+- **Objavi cjenik:** nastaje novi XML, osvježi se javna stranica, umetne se tablica u stranice weba i obrišu se stari XML-ovi.
 
-```bash
-cjenik objavi --dir moja-web-stranica
-```
+Izmjene se automatski spremaju kao nacrt. Javno se ništa ne mijenja dok se ne klikne *Objavi*.
 
-## Što nastaje
+## Što nastaje na stranici
 
 ```
 cjenik/
@@ -40,145 +37,141 @@ cjenik/
 ├── cjenik.xml            stalna poveznica na važeći cjenik
 ├── cjenik.csv            (ako je uključen CSV)
 ├── tablica.html          fragment tablice za widget
-├── cjenik-widget.js      widget za ugradnju u postojeće stranice
-└── arhiva/
-    ├── salon_Vukovarska 20 Osijek_01_001_01.10.2026_07:45.xml
-    └── salon_Vukovarska 20 Osijek_01_002_15.10.2026_07:30.xml
+├── cjenik-widget.js      widget za ugradnju u stranice
+├── arhiva/
+│   ├── salon_Vukovarska_20_Osijek_01_001_01.10.2026_07:45.xml
+│   └── salon_Vukovarska_20_Osijek_01_002_15.10.2026_07:30.xml
+├── admin/                sučelje (prijava lozinkom)
+├── _sustav/              kod plugina: mijenja ga ažuriranje
+└── _podaci/              podaci, lozinka i nacrt: ažuriranje ga nikad ne dira
 ```
+
+`_podaci/` i `_sustav/` zaštićeni su preko `.htaccess` (Apache). Podaci su k tome spremljeni kao `.php` datoteke koje počinju s `<?php exit;`, pa nisu čitljivi ni na nginxu.
 
 ### Naziv datoteke
 
 Prema pojašnjenju Ministarstva gospodarstva:
-`oblik_adresa_oznaka_broj pohrane_DD.MM.GGGG_HH:MM`
+`oblik_adresa_oznaka_brojpohrane_DD.MM.GGGG_HH:MM`
 
-Broj pohrane je redni broj objave. Znakovi `_ / \ :` unutar adrese ili oznake zamjenjuju se crticom, da ne pokvare strukturu naziva. Na Windowsu `:` nije dopušten u nazivu datoteke, pa je ondje zadani separator vremena `-`. Mijenja se u `cjenik.json` (`"separatorVremena"`).
+- Razmaci postaju `_`, a znakovi `/ \ : * ? " < > |` unutar podataka postaju `-`.
+- Broj pohrane je redni broj objave.
+- Separator vremena (`:`, `-` ili `.`) mijenja se u postavkama.
 
 ### Kada nastaje nova datoteka
 
-Nova XML datoteka nastaje **samo kad se nešto promijeni**: cijena, sidrena cijena, akcija, opis usluge ili podaci o objektu. Ako se klikne *Objavi* bez promjena, XML se ne dira; stranica se samo osvježi.
+Nova XML datoteka nastaje **samo kad se nešto promijeni**: cijena, sidrena cijena, akcija, opis ili podaci o objektu. Objava bez promjena ne dira XML.
 
-### Arhiva (30 dana)
+### Arhiva i automatsko brisanje
 
-Pri svakoj objavi zadržava se:
+Čuva se:
 
 - sve objavljeno u zadnjih 30 dana,
-- **zadnja objava prije te granice**, jer je ona vrijedila na početku razdoblja, pa je najstariji XML uvijek star barem 30 dana,
+- **zadnja objava prije te granice**, jer je vrijedila na početku razdoblja, pa je najstariji XML uvijek star barem 30 dana,
 - uvijek važeći cjenik.
 
 | Situacija | Što ostaje |
 |---|---|
-| Jedna objava prije 90 dana, bez promjena | ta jedna (ona je važeća) |
-| Promjena svaki dan 40 dana | zadnjih 30 + jedna s granice (31 datoteka) |
+| Jedna objava prije 90 dana, bez promjena | ta jedna (važeća) |
+| Promjena svaki dan 40 dana | zadnjih 30 + jedna s granice (31) |
 | Objave prije 100, 60 i 5 dana | ona od prije 60 i ona od prije 5 dana |
 
-Starije datoteke brišu se iz `cjenik/arhiva/` pri sljedećoj objavi. Ako se stranica prenosi alatom koji ne briše datoteke na serveru, stare ostaju i na serveru. To ne krši pravila, samo zauzima mjesto.
+Starije datoteke plugin briše sam na serveru: pri svakoj objavi i pri svakom otvaranju sučelja. Razdoblje se može produljiti u postavkama (30–365 dana).
 
-Razdoblje se može produljiti (`"danaArhive": 60`), ali ne i skratiti ispod 30.
+## Tablica na stranicama weba
 
-## Ugradnja tablice u postojeću stranicu
-
-**1. Umetanje pri objavi (preporučeno: bez JavaScripta, vidljivo tražilicama).** U HTML stranice dodaj oznake:
+**1. Umetanje pri objavi (preporučeno: bez JavaScripta i vidljivo tražilicama).** U HTML stranice dodaj oznake:
 
 ```html
 <!-- cjenik:pocetak -->
 <!-- cjenik:kraj -->
 ```
 
-U `cjenik.json` navedi koje datoteke treba ažurirati:
+U sučelju *Postavke → Tablica na stranicama weba* upiši putanje od korijena weba, na primjer `index.html` ili `usluge/index.html`. Pri svakoj objavi sadržaj između oznaka zamijeni se svježom tablicom. PHP mora imati dozvolu pisanja u te datoteke.
 
-```json
-"umetni": ["index.html", "usluge/index.html"]
-```
-
-Pri svakoj objavi sadržaj između oznaka zamijeni se svježom tablicom.
-
-Ako stranicu radi generator (Hugo, Jekyll…), oznake stavi u izvorni predložak ili parcijal, ne u generirani `public/` ili `_site/`.
-
-**2. Widget (JavaScript).**
+**2. Widget.**
 
 ```html
 <div data-cjenik></div>
 <script src="/cjenik/cjenik-widget.js" defer></script>
 ```
 
-**3. Poveznica** na samostalnu stranicu `/cjenik/`.
+**3. Poveznica** na `/cjenik/`.
 
-### Izgled
-
-Tablica preuzima font i boju teksta od stranice. Boje se mogu prilagoditi CSS varijablama:
+Tablica preuzima font i boju teksta od stranice. Boje se mijenjaju CSS varijablama:
 
 ```css
 .cjenik {
   --cjenik-akcent: #a0522d;        /* akcijska cijena i oznaka akcije */
-  --cjenik-rub: #e5e0d8;           /* crte između redaka */
-  --cjenik-blago: #7a746b;         /* sporedni tekst */
+  --cjenik-rub: #e5e0d8;
+  --cjenik-blago: #7a746b;
   --cjenik-pozadina-zaglavlja: #f4f1ec;
 }
 ```
 
+## Ažuriranje plugina
+
+Nova verzija objavljuje se tagom u ovom repozitoriju:
+
+```bash
+echo "1.1.0" > cjenik/_sustav/VERZIJA
+git commit -am "Verzija 1.1.0" && git tag v1.1.0 && git push --follow-tags
+```
+
+GitHub Action pokrene testove na PHP 7.4, napravi `cjenik.zip` i objavi izdanje. Workflow je zasad u `alati/github-workflow-izdanje.yml`; da proradi, premjesti ga u `.github/workflows/izdanje.yml` (push traži GitHub token s ovlasti `workflow`). Do tada se izdanje može objaviti ručno:
+
+```bash
+php tests/testovi.php && zip -r cjenik.zip cjenik -x 'cjenik/_podaci/*' 'cjenik/arhiva/*'
+gh release create v1.1.0 cjenik.zip --title v1.1.0 --generate-notes
+```
+
+Instalacije ga preuzimaju na tri načina:
+
+- **Automatski:** kad klijent otvori sučelje, a u postavkama je uključeno *Automatski instaliraj nove verzije* (zadano). Provjera se radi najviše svakih 6 sati.
+- **Ručno:** gumb *Ažuriraj sada* u sučelju.
+- **Daljinski, za sve stranice odjednom:** svaka instalacija ima svoj ključ (*Postavke → Ažuriranje plugina*). Popis stranica upiši u `stranice.txt`:
+
+  ```
+  https://salonana.hr/cjenik/admin/ bb115c8cd788be15f0af72df4db2ea74d5d0baf8
+  https://servis-ivo.hr/cjenik/admin/ 4f0c...
+  ```
+
+  pa pokreni:
+
+  ```bash
+  alati/azuriraj-sve.sh stranice.txt
+  ```
+
+Ažuriranje mijenja samo `_sustav/` i `admin/`. Nova verzija se raspakira pokraj stare i zamijeni tek kad je potpuna. Podaci, lozinka i objavljeni cjenici ostaju netaknuti.
+
+Za ažuriranje repozitorij mora biti **javan**. Kod nije tajan, a podaci klijenata nikad nisu u repozitoriju. Za privatni repozitorij upiši GitHub token u `_podaci/postavke.php` (ključ `githubToken`).
+
 ## Sadržaj cjenika usluga
 
-Prema pojašnjenju ministarstva (točka 2.5.) za svaku uslugu objavljuje se:
+Prema pojašnjenju ministarstva (točka 2.5.):
 
 | Polje | U sučelju | XML |
 |---|---|---|
 | Naziv usluge | Opis usluge | `<naziv>` |
 | Maloprodajna cijena | Trenutna € | `<maloprodajnaCijena>` |
-| Poseban oblik prodaje i njegov naziv | Akcija / popust + naziv | `<posebanOblikProdaje primijenjen="da">` |
+| Poseban oblik prodaje i naziv | Akcija / popust + naziv | `<posebanOblikProdaje primijenjen="da">` |
 | Dodatna cijena na dan sidrenja | Sidrena € + datum | `<dodatnaCijena datum="2026-09-10">` |
 
-Neobavezna polja su kategorija (grupira tablicu), jedinica (npr. *po satu*) i najniža cijena u 30 dana prije akcije. Ako to polje ostane prazno, izračuna se iz prethodnih objava kad akcija počne.
-
-**Nove usluge uvedene nakon 10.9.2026.:** kao sidrena cijena upisuje se cijena s kojom je usluga uvedena i datum uvođenja. Ti se retci u tablici označe svojim datumom.
+**Nove usluge uvedene nakon 10.9.2026.:** kao sidrena cijena upisuje se cijena s kojom je usluga uvedena i datum uvođenja.
 
 **Usluge bez fiksne cijene:** objavljuju se elementi od kojih se cijena formira (npr. *Rad servisera, po satu*).
 
-### Primjer XML-a
+**Akcija:** najniža cijena u 30 dana prije akcije izračuna se sama iz prethodnih objava, a može se upisati i ručno.
 
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<cjenik vrsta="usluge" verzija="1.0">
-  <zaglavlje>
-    <obveznik><naziv>Frizerski salon Ana, vl. Ana Anić</naziv></obveznik>
-    <objekt><oblik>salon</oblik><adresa>Vukovarska 20 Osijek</adresa><oznaka>01</oznaka></objekt>
-    <brojPohrane>2</brojPohrane>
-    <datumObjave>2026-10-01T07:45:00+02:00</datumObjave>
-    <valuta>EUR</valuta>
-  </zaglavlje>
-  <usluge>
-    <usluga rb="1" sifra="9b0acda655">
-      <naziv>Pramenovi (balayage)</naziv>
-      <kategorija>Bojanje</kategorija>
-      <maloprodajnaCijena valuta="EUR">68.00</maloprodajnaCijena>
-      <posebanOblikProdaje primijenjen="da">Jesenska akcija</posebanOblikProdaje>
-      <najnizaCijena30Dana valuta="EUR">80.00</najnizaCijena30Dana>
-      <dodatnaCijena valuta="EUR" datum="2026-09-10">80.00</dodatnaCijena>
-    </usluga>
-  </usluge>
-</cjenik>
-```
+Struktura XML-a zasad nije propisana. Ako ministarstvo objavi shemu, mijenja se `cjenik/_sustav/lib/Formati.php`, a nova verzija dođe na sve stranice kroz ažuriranje.
 
-Struktura XML-a zasad nije propisana. Ako ministarstvo objavi shemu, mijenja se samo `src/formati.js`.
+## Zaboravljena lozinka
 
-## Automatski prijenos nakon objave
-
-U `cjenik.json` možeš upisati naredbu koja se izvrši nakon svake objave, npr.:
-
-```json
-"nakonObjave": "rsync -av --delete cjenik/ korisnik@server:/var/www/stranica/cjenik/"
-```
-
-ili `"git add -A && git commit -m 'Cjenik' && git push"` za GitHub Pages ili Netlify.
-
-## Rok za objavu
-
-Pružatelji usluga ažuriraju cjenik kod svake promjene cijene, **najkasnije do 8:00 na dan kad promjena stupa na snagu**. Vrijeme objave upisuje se u naziv datoteke i u `<datumObjave>`.
+Preko FTP-a obriši `cjenik/_podaci/postavke.php` i ponovno otvori `/cjenik/admin/` da postaviš novu lozinku. Cijene i arhiva ostaju. Pritom se generira i novi ključ za daljinsko ažuriranje.
 
 ## Razvoj
 
 ```bash
-npm test          # testovi (node:test)
-npm run admin     # sučelje nad primjerom u mapi primjer/
+php tests/testovi.php                          # testovi
+rsync -a --exclude _podaci --exclude arhiva cjenik/ primjer-stranica/cjenik/
+php -S 127.0.0.1:8089 -t primjer-stranica      # http://127.0.0.1:8089/cjenik/admin/
 ```
-
-Primjer statične stranice s umetnutom tablicom i widgetom nalazi se u `primjer/index.html`.

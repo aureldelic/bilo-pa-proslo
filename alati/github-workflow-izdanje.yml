@@ -1,0 +1,36 @@
+# Na svaki tag vX.Y.Z: testovi, pa izdanje s cjenik.zip (iz njega se plugin ažurira).
+name: Izdanje
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  izdanje:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          extensions: zip
+
+      - name: Testovi (PHP 7.4)
+        run: php tests/testovi.php
+
+      - name: Verzija u _sustav/VERZIJA mora odgovarati tagu
+        run: |
+          test "v$(cat cjenik/_sustav/VERZIJA)" = "${GITHUB_REF_NAME}" \
+            || { echo "VERZIJA je $(cat cjenik/_sustav/VERZIJA), a tag ${GITHUB_REF_NAME}"; exit 1; }
+
+      - name: Paket
+        run: zip -r cjenik.zip cjenik -x 'cjenik/_podaci/*' 'cjenik/arhiva/*'
+
+      - name: Objavi izdanje
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" cjenik.zip --title "$GITHUB_REF_NAME" --generate-notes

@@ -3,103 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
 <title>Uređivanje cjenika</title>
-<style>
-:root{
-  --pozadina:#f6f5f2;--povrsina:#fff;--tekst:#1d1c1a;--blago:#6f6b63;--rub:#e3dfd6;--rub-jak:#cbc6bb;
-  --akcent:#1f5f4a;--akcent-tekst:#fff;--akcent-blago:#e5f0eb;--upozorenje:#9a5b00;--upozorenje-blago:#fdf1dc;
-  --greska:#b3261e;--greska-blago:#fbe9e7;--sjena:0 1px 2px rgba(0,0,0,.05),0 4px 16px rgba(0,0,0,.04);
-  color-scheme:light;
-}
-@media (prefers-color-scheme:dark){:root{
-  --pozadina:#131312;--povrsina:#1c1c1a;--tekst:#ecebe6;--blago:#a29e95;--rub:#302e2a;--rub-jak:#45423c;
-  --akcent:#5fbf98;--akcent-tekst:#0d1f18;--akcent-blago:#1b2e27;--upozorenje:#f0b458;--upozorenje-blago:#2e2415;
-  --greska:#f2867d;--greska-blago:#331c1a;--sjena:none;color-scheme:dark}}
-*{box-sizing:border-box}
-body{margin:0;background:var(--pozadina);color:var(--tekst);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-button,input,select,textarea{font:inherit;color:inherit}
-.traka{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--pozadina) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--rub)}
-.traka-unutra{max-width:1180px;margin:0 auto;padding:12px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-.traka h1{font-size:1.05rem;margin:0;margin-right:auto;letter-spacing:-.01em}
-.status{font-size:.82rem;padding:4px 10px;border-radius:999px;background:var(--akcent-blago);color:var(--akcent);font-weight:600;white-space:nowrap}
-.status.ceka{background:var(--upozorenje-blago);color:var(--upozorenje)}
-main{max-width:1180px;margin:0 auto;padding:20px 16px 80px;display:grid;gap:18px}
-.karta{background:var(--povrsina);border:1px solid var(--rub);border-radius:12px;padding:18px 20px;box-shadow:var(--sjena);min-width:0}
-.karta>h2{font-size:1rem;margin:0 0 4px}
-.karta>.opis{margin:0 0 14px;color:var(--blago);font-size:.88rem}
-.polja{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 16px}
-label.polje{display:grid;gap:4px;font-size:.82rem;color:var(--blago);font-weight:500}
-input[type=text],input[type=date],select,textarea{width:100%;padding:8px 10px;border:1px solid var(--rub-jak);border-radius:8px;background:var(--povrsina);min-width:0}
-input:focus,select:focus,textarea:focus{outline:2px solid var(--akcent);outline-offset:-1px;border-color:transparent}
-input.krivo{border-color:var(--greska);background:var(--greska-blago)}
-.gumb{color:inherit;border:1px solid var(--rub-jak);background:var(--povrsina);padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:500;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
-.gumb:hover{border-color:var(--blago)}
-.gumb.glavni{background:var(--akcent);border-color:var(--akcent);color:var(--akcent-tekst)}
-.gumb.glavni:hover{filter:brightness(1.08)}
-.gumb:disabled{opacity:.5;cursor:default}
-.ikona{border:0;background:none;cursor:pointer;padding:6px;border-radius:6px;color:var(--blago);line-height:0}
-.ikona:hover{background:var(--pozadina);color:var(--tekst)}
-.ikona svg{width:16px;height:16px}
-.naziv-datoteke{margin-top:12px;font:12.5px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--blago);word-break:break-all}
-.naziv-datoteke b{color:var(--tekst);font-weight:500}
-.formati{display:flex;gap:16px;align-items:center;font-size:.9rem;padding-top:4px}
-.formati label{display:flex;gap:6px;align-items:center}
-
-/* Tablica usluga */
-.usluge{width:100%;border-collapse:collapse;table-layout:fixed}
-.usluge th{font-size:.74rem;text-transform:uppercase;letter-spacing:.04em;color:var(--blago);font-weight:600;text-align:left;padding:6px 6px 8px;border-bottom:1px solid var(--rub);white-space:nowrap}
-.usluge td{padding:6px;border-bottom:1px solid var(--rub);vertical-align:top}
-.usluge tr:last-child td{border-bottom:0}
-.usluge .c-kat{width:15%}.usluge .c-jed{width:11%}.usluge .c-iznos{width:92px}.usluge .c-dat{width:142px}.usluge .c-akc{width:190px}.usluge .c-akcije{width:92px;white-space:nowrap}
-.usluge input[type=text],.usluge input[type=date]{padding:7px 8px}
-.iznos{text-align:right;font-variant-numeric:tabular-nums}
-.akcija-celija{display:grid;gap:6px}
-.akcija-celija label.najniza[hidden]{display:none!important}
-.akcija-celija label{display:flex;gap:6px;align-items:center;font-size:.85rem;padding-top:7px;white-space:nowrap}
-.akcija-celija .mala{font-size:.75rem;color:var(--blago)}
-.mob{display:none}
-.prazno{padding:26px;text-align:center;color:var(--blago);border:1px dashed var(--rub-jak);border-radius:10px}
-.alati{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
-.alati .savjet{color:var(--blago);font-size:.82rem;flex:1 1 300px}
-
-@media (max-width:1060px){
-  .usluge{table-layout:auto}
-  .usluge thead{display:none}
-  .usluge,.usluge tbody{display:block}
-  .usluge tr{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px;padding:14px 0;border-bottom:1px solid var(--rub)}
-  .usluge td{display:block;padding:0;border:0;width:auto!important}
-  .usluge td.c-naz,.usluge td.c-akc{grid-column:1/-1}
-  .usluge td.c-akcije{grid-column:1/-1;display:flex;justify-content:flex-end}
-  .mob{display:block;font-size:.74rem;color:var(--blago);margin-bottom:3px;font-weight:500}
-}
-
-.dvostupac{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:18px;align-items:start}
-@media (max-width:980px){.dvostupac{grid-template-columns:1fr}}
-#pregled{border:1px solid var(--rub);border-radius:10px;padding:4px 14px 14px;background:#fff;color:#1c1b19;overflow:auto}
-.arhiva{list-style:none;margin:0;padding:0}
-.arhiva li{display:grid;grid-template-columns:auto 1fr auto;gap:2px 12px;padding:10px 0;border-bottom:1px solid var(--rub);font-size:.88rem;align-items:baseline}
-.arhiva li:last-child{border-bottom:0}
-.arhiva .br{font-weight:700;font-variant-numeric:tabular-nums}
-.arhiva .dat{color:var(--blago);font-size:.8rem;grid-column:2/-1}
-.arhiva a{color:inherit;word-break:break-all;grid-column:2/-1;font-size:.8rem}
-.znacka{font-size:.72rem;padding:2px 8px;border-radius:999px;background:var(--akcent-blago);color:var(--akcent);font-weight:600;white-space:nowrap}
-.znacka.brisanje{background:var(--upozorenje-blago);color:var(--upozorenje)}
-.greske{background:var(--greska-blago);color:var(--greska);border-radius:10px;padding:12px 16px;font-size:.88rem}
-.greske ul{margin:6px 0 0;padding-left:18px}
-.greske[hidden]{display:none}
-.poruka{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;transition:.25s;background:var(--tekst);color:var(--pozadina);padding:12px 18px;border-radius:10px;font-size:.9rem;max-width:min(560px,calc(100vw - 32px));box-shadow:0 8px 30px rgba(0,0,0,.2);pointer-events:none;z-index:10}
-.poruka.vidljiva{opacity:1;transform:translateX(-50%)}
-</style>
+<style>{{CSS}}</style>
 </head>
 <body>
 <div class="traka"><div class="traka-unutra">
   <h1>Cjenik usluga</h1>
   <span id="status" class="status">Učitavanje…</span>
-  <a class="gumb" href="/pregled/" target="_blank" rel="noopener">Javna stranica ↗</a>
+  <a class="gumb" href="../" target="_blank" rel="noopener">Javni cjenik ↗</a>
   <button class="gumb glavni" id="objavi">Objavi cjenik</button>
 </div></div>
 
 <main>
+  <div class="obavijest" id="obavijestAzuriranja" hidden>
+    <span id="tekstAzuriranja"></span>
+    <button class="gumb mali glavni" id="azurirajSada">Ažuriraj sada</button>
+  </div>
   <div class="greske" id="greske" hidden></div>
 
   <section class="karta">
@@ -137,7 +57,7 @@ input.krivo{border-color:var(--greska);background:var(--greska-blago)}
     <div id="prazno" class="prazno" hidden>Još nema usluga. Dodaj prvu.</div>
     <div class="alati">
       <button class="gumb" id="dodaj">+ Dodaj uslugu</button>
-      <span class="savjet">Za uslugu uvedenu nakon 10.9.2026. upiši datum kad je uvedena i cijenu s tog dana. Kategorija je neobavezna i grupira usluge u zasebne tablice.</span>
+      <span class="savjet">Za uslugu uvedenu nakon 10.9.2026. upiši datum kad je uvedena i cijenu s tog dana. Kategorija je neobavezna i grupira usluge u tablici.</span>
     </div>
   </section>
 
@@ -149,10 +69,50 @@ input.krivo{border-color:var(--greska);background:var(--greska-blago)}
     </section>
     <section class="karta">
       <h2>Objavljeni cjenici</h2>
-      <p class="opis">Nova datoteka nastaje samo kad se cijene ili podaci promijene. Čuva se sve iz zadnjih <span id="dana">30</span> dana i zadnja objava prije toga.</p>
+      <p class="opis">Nova datoteka nastaje samo kad se cijene ili podaci promijene. Čuva se sve iz zadnjih <span id="dana">30</span> dana i zadnja objava prije toga; starije se brišu same.</p>
       <ul class="arhiva" id="arhiva"></ul>
     </section>
   </div>
+
+  <details class="karta" id="napredno">
+    <summary>Postavke <small>· za webmastera</small></summary>
+    <div class="postavke">
+      <div>
+        <h3>Tablica na stranicama weba</h3>
+        <p class="opis">Datoteke (relativno od korijena weba) u koje se pri svakoj objavi umeće tablica, između oznaka <code>&lt;!-- cjenik:pocetak --&gt;</code> i <code>&lt;!-- cjenik:kraj --&gt;</code>. Jedna po retku.</p>
+        <textarea id="umetni" rows="4" placeholder="index.html&#10;usluge/index.html"></textarea>
+        <p class="opis" style="margin-top:10px">Ili widget bilo gdje na stranici:</p>
+        <pre class="kod">&lt;div data-cjenik&gt;&lt;/div&gt;
+&lt;script src="/cjenik/cjenik-widget.js" defer&gt;&lt;/script&gt;</pre>
+      </div>
+      <div>
+        <h3>Arhiva i nazivi datoteka</h3>
+        <label class="polje">Čuvaj cjenike (dana, najmanje 30)<input type="number" id="danaArhive" min="30" max="365"></label>
+        <label class="polje">Separator vremena u nazivu datoteke
+          <select id="separatorVremena"><option value=":">07:45 (kao u primjeru ministarstva)</option><option value="-">07-45</option><option value=".">07.45</option></select>
+        </label>
+        <button class="gumb mali" id="spremiPostavke">Spremi postavke</button>
+      </div>
+      <div>
+        <h3>Ažuriranje plugina</h3>
+        <p class="opis">Instalirana verzija <b id="verzija">{{VERZIJA}}</b>, PHP <span id="php"></span>.</p>
+        <label class="kvacica"><input type="checkbox" id="automatskoAzuriranje"> Automatski instaliraj nove verzije</label>
+        <div class="redak"><button class="gumb mali" id="provjeriAzuriranje">Provjeri novu verziju</button></div>
+        <p class="opis" style="margin-top:12px">Daljinsko ažuriranje (npr. za sve stranice odjednom):</p>
+        <pre class="kod" id="naredbaAzuriranja"></pre>
+        <div class="redak"><button class="gumb mali" id="noviKljuc">Novi ključ</button></div>
+      </div>
+      <div>
+        <h3>Lozinka</h3>
+        <label class="polje">Trenutna lozinka<input type="password" id="staraLozinka" autocomplete="current-password"></label>
+        <label class="polje">Nova lozinka (barem 10 znakova)<input type="password" id="novaLozinka" autocomplete="new-password"></label>
+        <div class="redak">
+          <button class="gumb mali" id="promijeniLozinku">Promijeni lozinku</button>
+          <button class="gumb mali" id="odjava">Odjava</button>
+        </div>
+      </div>
+    </div>
+  </details>
 </main>
 <div class="poruka" id="poruka" role="status"></div>
 
@@ -167,7 +127,7 @@ input.krivo{border-color:var(--greska);background:var(--greska-blago)}
     <td class="c-akc"><div class="akcija-celija">
       <label><input type="checkbox" data-s="akcija.aktivna"> Akcija / popust</label>
       <input type="text" data-s="akcija.naziv" placeholder="Naziv, npr. Jesenska akcija" hidden>
-      <label class="najniza" hidden style="display:grid;gap:3px;padding:0;white-space:normal"><span class="mala">Najniža cijena u 30 dana prije akcije</span>
+      <label class="najniza" hidden><span class="mala">Najniža cijena u 30 dana prije akcije</span>
       <input type="text" class="iznos" data-s="akcija.najniza30" inputmode="decimal" placeholder="auto" title="Ako ostane prazno, izračuna se iz prethodnih objava"></label>
     </div></td>
     <td class="c-akcije">
@@ -180,17 +140,21 @@ input.krivo{border-color:var(--greska);background:var(--greska-blago)}
 <datalist id="kategorije"></datalist>
 
 <script>
+const CSRF = '{{CSRF}}';
 const $ = (s) => document.querySelector(s);
 let podaci = null;
-let zadnjeStanje = null;
+let sustav = null;
 
-async function api(metoda, putanja, tijelo) {
-  const r = await fetch(putanja, {
-    method: metoda,
-    headers: { 'content-type': 'application/json', 'x-cjenik': '1' },
-    body: tijelo ? JSON.stringify(tijelo) : undefined,
+async function api(radnja, tijelo, metoda) {
+  const r = await fetch('?api=' + radnja, {
+    method: metoda || (tijelo === undefined ? 'GET' : 'POST'),
+    headers: { 'content-type': 'application/json', 'x-csrf': CSRF },
+    body: tijelo === undefined ? undefined : JSON.stringify(tijelo),
+    credentials: 'same-origin',
   });
-  const j = await r.json();
+  let j = {};
+  try { j = await r.json(); } catch { throw new Error('Neočekivan odgovor poslužitelja (' + r.status + ')'); }
+  if (r.status === 401) { location.reload(); throw new Error(j.greska); }
   if (!r.ok && !j.greske) throw new Error(j.greska || r.statusText);
   return { ok: r.ok, ...j };
 }
@@ -208,7 +172,7 @@ function parsiraj(v) {
   if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
   return /^\d+(\.\d+)?$/.test(s) ? Math.round(parseFloat(s) * 100) / 100 : NaN;
 }
-const noviId = () => Math.random().toString(16).slice(2, 12);
+const noviId = () => Array.from(crypto.getRandomValues(new Uint8Array(5)), (b) => b.toString(16).padStart(2, '0')).join('');
 
 function poruka(t, trajanje = 4200) {
   const el = $('#poruka');
@@ -250,12 +214,17 @@ function prikaziAkciju(tr, s) {
 }
 
 function osvjeziKategorije() {
-  const k = [...new Set(podaci.stavke.map((s) => s.kategorija).filter(Boolean))];
-  $('#kategorije').innerHTML = k.map((x) => `<option value="${x.replace(/"/g, '&quot;')}">`).join('');
+  const dl = $('#kategorije');
+  dl.textContent = '';
+  [...new Set(podaci.stavke.map((s) => s.kategorija).filter(Boolean))].forEach((k) => {
+    const o = document.createElement('option');
+    o.value = k;
+    dl.appendChild(o);
+  });
 }
 
 function iscrtajStanje(st) {
-  zadnjeStanje = st;
+  sustav = st.sustav;
   const s = $('#status');
   if (!st.arhiva.length) { s.textContent = 'Još nije objavljeno'; s.className = 'status ceka'; }
   else if (st.promjene) { s.textContent = 'Neobjavljene promjene'; s.className = 'status ceka'; }
@@ -263,24 +232,43 @@ function iscrtajStanje(st) {
   $('#dana').textContent = podaci.danaArhive || 30;
 
   const ul = $('#arhiva');
-  ul.innerHTML = st.arhiva.length ? '' : '<li style="display:block;color:var(--blago)">Još nema objava.</li>';
+  ul.textContent = '';
+  if (!st.arhiva.length) {
+    const li = document.createElement('li');
+    li.style.cssText = 'display:block;color:var(--blago)';
+    li.textContent = 'Još nema objava.';
+    ul.appendChild(li);
+  }
   st.arhiva.forEach((o, i) => {
     const li = document.createElement('li');
     const d = new Date(o.datum);
-    const znacka = i === 0 ? '<span class="znacka">važeći</span>'
-      : o.brisanje ? '<span class="znacka brisanje">briše se pri objavi</span>' : '';
-    li.innerHTML = `<span class="br">#${o.broj}</span><span>${d.toLocaleString('hr-HR', { dateStyle: 'medium', timeStyle: 'short' })}</span>${znacka}`
-      + `<span class="dat">${o.starost === 0 ? 'danas' : `prije ${o.starost} ${o.starost % 10 === 1 && o.starost % 100 !== 11 ? 'dan' : 'dana'}`}</span>`;
+    const starost = o.starost === 0 ? 'danas' : `prije ${o.starost} ${o.starost % 10 === 1 && o.starost % 100 !== 11 ? 'dan' : 'dana'}`;
+    li.innerHTML = `<span class="br">#${Number(o.broj)}</span><span>${d.toLocaleString('hr-HR', { dateStyle: 'medium', timeStyle: 'short' })}</span>`
+      + (i === 0 ? '<span class="znacka">važeći</span>' : o.brisanje ? '<span class="znacka brisanje">briše se</span>' : '<span></span>')
+      + `<span class="dat">${starost}</span>`;
     o.datoteke.forEach((f) => {
       const a = document.createElement('a');
-      a.href = '/pregled/arhiva/' + encodeURIComponent(f);
+      a.href = '../arhiva/' + encodeURIComponent(f);
       a.target = '_blank';
       a.textContent = f;
       li.appendChild(a);
     });
     ul.appendChild(li);
   });
+
+  $('#verzija').textContent = sustav.verzija;
+  $('#php').textContent = sustav.php;
+  const url = new URL('./?api=daljinsko-azuriranje', location.href).href;
+  $('#naredbaAzuriranja').textContent = `curl -X POST -d "kljuc=${sustav.kljucAzuriranja}" \\\n  "${url}"`;
   iducaDatoteka();
+}
+
+/** Polja postavki — samo pri učitavanju i spremanju, da autospremanje ne pregazi unos. */
+function iscrtajPostavke() {
+  $('#umetni').value = (podaci.umetni || []).join('\n');
+  $('#danaArhive').value = podaci.danaArhive || 30;
+  $('#separatorVremena').value = podaci.separatorVremena || ':';
+  $('#automatskoAzuriranje').checked = !!sustav.automatskoAzuriranje;
 }
 
 function iducaDatoteka() {
@@ -308,25 +296,26 @@ let tPregled, tSpremi;
 function promjena() {
   clearTimeout(tPregled);
   tPregled = setTimeout(async () => {
-    const { html } = await api('POST', '/api/pregled', nacrt());
-    pregledKorijen.innerHTML = html;
-  }, 250);
+    try { pregledKorijen.innerHTML = (await api('pregled', nacrt())).html; } catch (e) { /* pregled nije kritičan */ }
+  }, 300);
   clearTimeout(tSpremi);
-  tSpremi = setTimeout(async () => {
-    const st = await api('PUT', '/api/nacrt', nacrt());
-    iscrtajStanje(st);
-  }, 700);
+  tSpremi = setTimeout(spremiNacrt, 800);
   iducaDatoteka();
 }
+async function spremiNacrt() {
+  try { iscrtajStanje(await api('nacrt', nacrt())); } catch (e) { poruka('Nacrt nije spremljen: ' + e.message); }
+}
 
-/** Podaci za slanje: iznosi kao brojevi (NaN -> tekst da poslužitelj javi grešku). */
+/** Podaci za slanje: iznosi kao brojevi (neispravni ostaju tekst da poslužitelj javi grešku). */
 function nacrt() {
-  const n = structuredClone(podaci);
-  n.stavke = n.stavke.map((s) => {
-    for (const k of ['cijena', 'sidrenaCijena']) s[k] = broj(s[k]);
-    s.akcija.najniza30 = broj(s.akcija.najniza30);
-    return s;
-  });
+  const n = {};
+  for (const k of ['obveznik', 'objekt', 'naslovStranice', 'napomena', 'formati']) n[k] = podaci[k];
+  n.stavke = podaci.stavke.map((s) => ({
+    ...s,
+    cijena: broj(s.cijena),
+    sidrenaCijena: broj(s.sidrenaCijena),
+    akcija: { ...s.akcija, najniza30: broj(s.akcija.najniza30) },
+  }));
   return n;
 }
 function broj(v) {
@@ -342,15 +331,15 @@ document.addEventListener('input', (e) => {
   if (el.dataset.format) {
     const f = new Set(podaci.formati || []);
     el.checked ? f.add(el.dataset.format) : f.delete(el.dataset.format);
-    if (!f.size) { f.add('xml'); iscrtajPolja(); }
+    if (!f.size) f.add('xml');
     podaci.formati = ['xml', 'csv'].filter((x) => f.has(x));
+    iscrtajPolja();
     promjena();
   }
   if (el.dataset.s) {
     const tr = el.closest('tr');
     const s = podaci.stavke[tr.dataset.i];
-    const v = el.type === 'checkbox' ? el.checked : el.value;
-    postavi(s, el.dataset.s, v);
+    postavi(s, el.dataset.s, el.type === 'checkbox' ? el.checked : el.value);
     if (el.classList.contains('iznos')) el.classList.toggle('krivo', Number.isNaN(parsiraj(el.value)));
     if (el.dataset.s === 'akcija.aktivna') prikaziAkciju(tr, s);
     if (el.dataset.s === 'kategorija') osvjeziKategorije();
@@ -406,7 +395,7 @@ $('#objavi').addEventListener('click', async () => {
   b.disabled = true;
   clearTimeout(tSpremi);
   try {
-    const r = await api('POST', '/api/objavi', nacrt());
+    const r = await api('objavi', nacrt());
     if (!r.ok) return prikaziGreske(r.greske);
     prikaziGreske([]);
     podaci = r.podaci;
@@ -418,7 +407,6 @@ $('#objavi').addEventListener('click', async () => {
     if (rz.obrisano.length) t += ` Iz arhive obrisano: ${rz.obrisano.length}.`;
     if (rz.umetnuto.length) t += ` Tablica umetnuta u: ${rz.umetnuto.join(', ')}.`;
     if (rz.upozorenja.length) t += ' ' + rz.upozorenja.join(' ');
-    if (rz.naredba) t += rz.naredba.ok ? ' Naredba nakon objave je izvršena.' : ' Naredba nakon objave NIJE uspjela: ' + rz.naredba.izlaz;
     poruka(t, 7000);
   } catch (err) {
     poruka('Greška: ' + err.message, 7000);
@@ -427,14 +415,75 @@ $('#objavi').addEventListener('click', async () => {
   }
 });
 
+/* ---------- Postavke ---------- */
+async function spremiPostavke(dodatno = {}) {
+  const r = await api('postavke', {
+    umetni: $('#umetni').value.split('\n').map((x) => x.trim()).filter(Boolean),
+    danaArhive: +$('#danaArhive').value || 30,
+    separatorVremena: $('#separatorVremena').value,
+    automatskoAzuriranje: $('#automatskoAzuriranje').checked,
+    ...dodatno,
+  });
+  podaci.umetni = r.podaci.umetni;
+  podaci.danaArhive = r.podaci.danaArhive;
+  podaci.separatorVremena = r.podaci.separatorVremena;
+  iscrtajStanje(r);
+  iscrtajPostavke();
+  poruka(r.upozorenja?.length ? r.upozorenja.join(' ') : 'Postavke su spremljene.', 6000);
+}
+$('#spremiPostavke').addEventListener('click', () => spremiPostavke().catch((e) => poruka('Greška: ' + e.message)));
+$('#automatskoAzuriranje').addEventListener('change', () => spremiPostavke().catch((e) => poruka('Greška: ' + e.message)));
+$('#noviKljuc').addEventListener('click', () => {
+  if (confirm('Stari ključ za daljinsko ažuriranje prestat će raditi. Nastaviti?')) spremiPostavke({ noviKljuc: true }).catch((e) => poruka('Greška: ' + e.message));
+});
+
+$('#promijeniLozinku').addEventListener('click', async () => {
+  try {
+    const r = await api('lozinka', { stara: $('#staraLozinka').value, nova: $('#novaLozinka').value });
+    if (!r.ok) return poruka(r.greska);
+    $('#staraLozinka').value = $('#novaLozinka').value = '';
+    poruka('Lozinka je promijenjena.');
+  } catch (e) { poruka('Greška: ' + e.message); }
+});
+$('#odjava').addEventListener('click', async () => { await api('odjava', {}); location.reload(); });
+
+/* ---------- Ažuriranje ---------- */
+function prikaziAzuriranje(info) {
+  const el = $('#obavijestAzuriranja');
+  if (info.instalirano) {
+    poruka(`Plugin je ažuriran na verziju ${info.instalirano}.`, 6000);
+    setTimeout(() => location.reload(), 1500);
+    return;
+  }
+  el.hidden = !info.dostupna;
+  if (info.dostupna) $('#tekstAzuriranja').textContent = `Dostupna je nova verzija ${info.verzija} (instalirana ${info.trenutna}).`;
+}
+async function provjeriAzuriranje(prisilno) {
+  const info = await api('azuriranje' + (prisilno ? '&prisilno=1' : ''), {});
+  prikaziAzuriranje(info);
+  return info;
+}
+$('#provjeriAzuriranje').addEventListener('click', async () => {
+  try {
+    const info = await provjeriAzuriranje(true);
+    if (!info.dostupna && !info.instalirano) poruka(`Imaš najnoviju verziju (${info.trenutna}).`);
+  } catch (e) { poruka('Provjera nije uspjela: ' + e.message); }
+});
+$('#azurirajSada').addEventListener('click', async (e) => {
+  e.target.disabled = true;
+  try { prikaziAzuriranje(await api('azuriraj', {})); } catch (err) { poruka('Ažuriranje nije uspjelo: ' + err.message, 7000); }
+  finally { e.target.disabled = false; }
+});
+
 (async () => {
-  const st = await api('GET', '/api/stanje');
+  const st = await api('stanje');
   podaci = st.podaci;
   iscrtajPolja();
   iscrtajRetke();
   iscrtajStanje(st);
-  const { html } = await api('POST', '/api/pregled', nacrt());
-  pregledKorijen.innerHTML = html;
+  iscrtajPostavke();
+  pregledKorijen.innerHTML = (await api('pregled', nacrt())).html;
+  provjeriAzuriranje(false).catch(() => {});
 })();
 </script>
 </body>
