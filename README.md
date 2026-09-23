@@ -114,7 +114,7 @@ Nova verzija objavljuje se tagom u ovom repozitoriju:
 
 ```bash
 echo "1.1.0" > cjenik/_sustav/VERZIJA
-git commit -am "Verzija 1.1.0" && git tag v1.1.0 && git push --follow-tags
+git commit -am "Verzija 1.1.0" && git tag v1.1.0 && git push origin main v1.1.0
 ```
 
 GitHub Action pokrene testove na PHP 7.4, napravi `cjenik.zip` i objavi izdanje.
