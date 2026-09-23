@@ -147,3 +147,5 @@ html[data-tema="tamna"] #pregled{background:#1d1d1b;color:#eeece6}
 .logo-veliki{width:200px;height:auto;margin:0 auto 8px;display:block}
 @media (max-width:520px){.logo-veliki{width:150px}}
 .usluge input.datum{font-variant-numeric:tabular-nums}
+#statusZastite a{color:inherit}
+@media (max-width:520px){#pregled{padding:2px 4px 10px;margin:0 -8px}.karta{padding:16px 14px}}
