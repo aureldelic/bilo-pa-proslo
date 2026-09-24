@@ -209,7 +209,6 @@ final class Uvoz
             $sidrena = Util::parsirajIznos($v('dodatna_cijena'));
             $datum = self::datum($v('datum_dodatne_cijene'));
             $akcijaTekst = strtoupper(trim((string) $v('poseban_oblik_prodaje')));
-            $aktivna = in_array($akcijaTekst, ['DA', 'YES', '1', 'TRUE'], true);
             if ($akcijaTekst !== '' && !in_array($akcijaTekst, ['DA', 'NE', 'YES', 'NO', '1', '0', 'TRUE', 'FALSE'], true)) {
                 $greske[] = "Red $br: poseban_oblik_prodaje mora biti DA ili NE.";
             }
@@ -223,9 +222,13 @@ final class Uvoz
             if ($sidrena === null || (is_float($sidrena) && is_nan($sidrena))) $greske[] = "Red $br: neispravna dodatna_cijena.";
             if ($datum === '') $greske[] = "Red $br: neispravan datum_dodatne_cijene.";
             $nazivAkcije = trim((string) $v('naziv_posebnog_oblika_prodaje'));
-            if ($aktivna && $nazivAkcije === '') $greske[] = "Red $br: za aktivnu prodaju nedostaje naziv_posebnog_oblika_prodaje.";
             $najniza = Util::parsirajIznos($v('najniza_cijena_30_dana'));
             if (is_float($najniza) && is_nan($najniza)) $greske[] = "Red $br: neispravna najniza_cijena_30_dana.";
+            $aktivna = $nazivAkcije !== '' || $najniza !== null || in_array($akcijaTekst, ['DA', 'YES', '1', 'TRUE'], true);
+            if ($aktivna && $nazivAkcije === '') $greske[] = "Red $br: za posebni oblik prodaje nedostaje naziv_posebnog_oblika_prodaje.";
+            if ($nazivAkcije !== '' && in_array($akcijaTekst, ['NE', 'NO', '0', 'FALSE'], true)) {
+                $upozorenja[] = "Red $br: upisani naziv ponude automatski uključuje poseban oblik prodaje; vrijednost NE je zanemarena.";
+            }
             if (count($greske) >= 30) break;
 
             $stavke[] = Podaci::novaStavka([

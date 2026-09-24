@@ -103,10 +103,10 @@ test('datum sidrenja: unos 10.9.2026. postaje ISO, neispravan se odbija', functi
         'stavke' => [['naziv' => 'A', 'cijena' => 1, 'sidrenaCijena' => 1, 'datumSidrenja' => '2026-02-31']]])) !== [], true);
 });
 
-test('uvoz CSV-a: standardna zaglavlja, iznosi, datum i akcija', function () {
+test('uvoz CSV-a: naziv ponude automatski uključuje akciju', function () {
     $put = sys_get_temp_dir() . '/cjenik-uvoz-' . bin2hex(random_bytes(4)) . '.csv';
     $zaglavlje = implode(';', Uvoz::ZAGLAVLJA);
-    file_put_contents($put, "\xEF\xBB\xBF" . $zaglavlje . "\nŠišanje;Kosa;kom;12,50;DA;Ljetna akcija;10,00;15,00;10.9.2026.;abc123\n");
+    file_put_contents($put, "\xEF\xBB\xBF" . $zaglavlje . "\nŠišanje;Kosa;kom;12,50;;Ljetna akcija;10,00;15,00;10.9.2026.;abc123\n");
     $r = Uvoz::datoteka($put, 'cjenik.csv');
     @unlink($put);
     jednako($r['redaka'], 1);

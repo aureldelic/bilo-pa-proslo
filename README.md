@@ -131,11 +131,19 @@ Starije datoteke plugin briše sam na serveru: pri svakoj objavi i pri svakom ot
 
 ### Format za uvoz
 
-Prvi radni list (po mogućnosti nazvan `Import`) mora u prvom retku imati ova zaglavlja. Isti format koristi i CSV izvoz, pa se izvezeni CSV može ponovno uvesti:
+Prvi radni list (po mogućnosti nazvan `Import`) mora u prvom retku imati ova zaglavlja:
 
-`naziv_usluge`, `kategorija`, `jedinica_mjere`, `maloprodajna_cijena`, `poseban_oblik_prodaje`, `naziv_posebnog_oblika_prodaje`, `najniza_cijena_30_dana`, `dodatna_cijena`, `datum_dodatne_cijene`, `sifra`.
+`naziv_usluge`, `kategorija`, `jedinica_mjere`, `maloprodajna_cijena`, `naziv_posebnog_oblika_prodaje`, `najniza_cijena_30_dana`, `dodatna_cijena`, `datum_dodatne_cijene`, `sifra`.
 
-Obavezni su naziv, maloprodajna cijena, dodatna cijena i datum dodatne cijene. `poseban_oblik_prodaje` je `DA` ili `NE`. `sifra` je stabilan identifikator; ako je prazna, plugin zadržava postojeću šifru stavke s istom kategorijom, nazivom i jedinicom ili generira novu.
+Obavezni su naziv, maloprodajna cijena, dodatna cijena i datum dodatne cijene. `sifra` je stabilan identifikator; ako je prazna, plugin zadržava postojeću šifru stavke s istom kategorijom, nazivom i jedinicom ili generira novu.
+
+Poseban oblik prodaje određuje se automatski:
+
+- Prazan `naziv_posebnog_oblika_prodaje` znači redovnu prodaju bez akcije ili popusta.
+- Popunjen naziv automatski uključuje posebni oblik prodaje. Naziv treba jasno opisati ponudu, npr. `Ljetna akcija`, `Popust 20%` ili `Paket 3 za 2`. `maloprodajna_cijena` je cijena koju kupac tada plaća.
+- Za aktivnu ponudu u `najniza_cijena_30_dana` upisuje se najniža cijena koja je vrijedila u 30 dana prije početka ponude. Polje može ostati prazno samo ako je plugin može izračunati iz prethodnih objava iste stavke.
+
+Stariji CSV izvoz sadrži i stupac `poseban_oblik_prodaje` (`DA`/`NE`). Importer ga i dalje prihvaća, ali kad je naziv ponude popunjen, naziv ima prednost i ponuda se automatski smatra aktivnom.
 
 Uvoz prima najviše 2 MB i 2000 stavki. XLSX se čita bez raspakiravanja u javnu mapu, uz ograničenje broja i ukupne raspakirane veličine ZIP dijelova. Privremenu upload datoteku PHP uklanja nakon zahtjeva.
 
