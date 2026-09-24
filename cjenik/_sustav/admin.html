@@ -74,6 +74,8 @@
     <div id="prazno" class="prazno" hidden>Još nema usluga. Dodaj prvu.</div>
     <div class="alati">
       <button class="gumb" id="dodaj">+ Dodaj uslugu</button>
+      <button class="gumb" id="uvezi" type="button">Uvezi Excel / CSV</button>
+      <input id="datotekaUvoza" type="file" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" hidden>
       <span class="savjet">Za uslugu uvedenu nakon 10.9.2026. upiši datum kad je uvedena i cijenu s tog dana. Kategorija je neobavezna i grupira usluge u tablici.</span>
     </div>
   </section>
@@ -198,6 +200,17 @@ async function api(radnja, tijelo, metoda) {
   if (r.status === 401) { location.reload(); throw new Error(j.greska); }
   if (!r.ok && !j.greske) throw new Error(j.greska || r.statusText);
   return { ok: r.ok, ...j };
+}
+
+async function apiDatoteka(radnja, datoteka) {
+  const obrazac = new FormData();
+  obrazac.append('datoteka', datoteka, datoteka.name);
+  const r = await fetch('?api=' + radnja, { method: 'POST', headers: { 'x-csrf': CSRF }, body: obrazac, credentials: 'same-origin' });
+  let j = {};
+  try { j = await r.json(); } catch { throw new Error('Neočekivan odgovor poslužitelja (' + r.status + ')'); }
+  if (r.status === 401) { location.reload(); throw new Error(j.greska); }
+  if (!r.ok) throw new Error(j.greska || r.statusText);
+  return j;
 }
 
 const dohvati = (o, p) => p.split('.').reduce((a, k) => a?.[k], o);
@@ -470,6 +483,29 @@ $('#dodaj').addEventListener('click', () => {
   iscrtajRetke();
   $('#retci').lastElementChild.querySelector('[data-s="naziv"]').focus();
   promjena();
+});
+
+$('#uvezi').addEventListener('click', () => $('#datotekaUvoza').click());
+$('#datotekaUvoza').addEventListener('change', async (e) => {
+  const datoteka = e.target.files?.[0];
+  e.target.value = '';
+  if (!datoteka) return;
+  const gumb = $('#uvezi');
+  gumb.disabled = true;
+  try {
+    const r = await apiDatoteka('uvoz', datoteka);
+    if (!confirm(`Datoteka sadrži ${r.redaka} stavki. Zamijeniti sve stavke u nacrtu? Javni cjenik se neće promijeniti dok ne klikneš Objavi.`)) return;
+    podaci.stavke = r.stavke;
+    iscrtajRetke();
+    promjena();
+    clearTimeout(tSpremi);
+    await spremiNacrt();
+    poruka(`Uvezeno je ${r.redaka} stavki u nacrt. Pregledaj ih i klikni Objavi kad su spremne.`, 7000);
+  } catch (err) {
+    poruka('Uvoz nije uspio: ' + err.message, 9000);
+  } finally {
+    gumb.disabled = false;
+  }
 });
 
 $('#objavi').addEventListener('click', async () => {

@@ -74,6 +74,7 @@ Na adresi `https://stranica.hr/cjenik/admin/` se prijavi e-mailom i lozinkom i u
 
 - **Obrt i objekt:** naziv, oblik objekta (salon, servis, ured…), adresa i oznaka. Ti podaci ulaze u naziv datoteke.
 - **Usluge:** opis, trenutna cijena i cijena na 10.9.2026. Kad se upiše trenutna cijena, sidrena se predloži sama. Neobavezno se dodaju kategorija, jedinica i akcija.
+- **Uvoz:** standardizirani Excel (`.xlsx`) ili CSV može zamijeniti sve stavke u nacrtu. Datoteka se obrađuje iz privremene upload putanje i ne sprema se na web. Uvoz ne objavljuje cjenik dok se ne klikne *Objavi*.
 - **Objavi cjenik:** nastaje novi XML, osvježi se javna stranica, umetne se tablica u stranice weba i obrišu se stari XML-ovi.
 
 Izmjene se automatski spremaju kao nacrt. Javno se ništa ne mijenja dok se ne klikne *Objavi*.
@@ -127,6 +128,16 @@ Nova XML datoteka nastaje **samo kad se nešto promijeni**: cijena, sidrena cije
 Starije datoteke plugin briše sam na serveru: pri svakoj objavi i pri svakom otvaranju sučelja. Razdoblje se može produljiti u postavkama (30–365 dana).
 
 ## Sadržaj cjenika usluga
+
+### Format za uvoz
+
+Prvi radni list (po mogućnosti nazvan `Import`) mora u prvom retku imati ova zaglavlja. Isti format koristi i CSV izvoz, pa se izvezeni CSV može ponovno uvesti:
+
+`naziv_usluge`, `kategorija`, `jedinica_mjere`, `maloprodajna_cijena`, `poseban_oblik_prodaje`, `naziv_posebnog_oblika_prodaje`, `najniza_cijena_30_dana`, `dodatna_cijena`, `datum_dodatne_cijene`, `sifra`.
+
+Obavezni su naziv, maloprodajna cijena, dodatna cijena i datum dodatne cijene. `poseban_oblik_prodaje` je `DA` ili `NE`. `sifra` je stabilan identifikator; ako je prazna, plugin zadržava postojeću šifru stavke s istom kategorijom, nazivom i jedinicom ili generira novu.
+
+Uvoz prima najviše 2 MB i 2000 stavki. XLSX se čita bez raspakiravanja u javnu mapu, uz ograničenje broja i ukupne raspakirane veličine ZIP dijelova. Privremenu upload datoteku PHP uklanja nakon zahtjeva.
 
 Prema pojašnjenju ministarstva (točka 2.5.):
 

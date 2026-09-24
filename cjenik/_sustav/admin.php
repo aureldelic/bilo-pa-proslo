@@ -385,6 +385,27 @@ if ($api) {
                 $s->spremiNacrt(tijelo());
                 json_odgovor(200, stanje($s));
 
+            case 'uvoz':
+                if (empty($_FILES['datoteka']) || !is_array($_FILES['datoteka'])) {
+                    json_odgovor(422, ['greska' => 'Odaberi .xlsx ili .csv datoteku.']);
+                }
+                $f = $_FILES['datoteka'];
+                $kod = (int) ($f['error'] ?? UPLOAD_ERR_NO_FILE);
+                if ($kod !== UPLOAD_ERR_OK) {
+                    $poruke = [UPLOAD_ERR_INI_SIZE => 'Datoteka je veća od ograničenja poslužitelja.', UPLOAD_ERR_FORM_SIZE => 'Datoteka je prevelika.',
+                        UPLOAD_ERR_PARTIAL => 'Datoteka je prenesena samo djelomično.', UPLOAD_ERR_NO_FILE => 'Datoteka nije odabrana.'];
+                    json_odgovor(422, ['greska' => $poruke[$kod] ?? 'Upload datoteke nije uspio.']);
+                }
+                if ((int) ($f['size'] ?? 0) > Uvoz::MAKS_BAJTOVA) json_odgovor(413, ['greska' => 'Datoteka je veća od dopuštenih 2 MB.']);
+                $privremena = (string) ($f['tmp_name'] ?? '');
+                if (!is_uploaded_file($privremena)) json_odgovor(422, ['greska' => 'Upload datoteke nije moguće potvrditi.']);
+                try {
+                    $rezultat = Uvoz::datoteka($privremena, basename((string) $f['name']), $s->nacrt()['stavke']);
+                } catch (\RuntimeException $e) {
+                    json_odgovor(422, ['greska' => $e->getMessage()]);
+                }
+                json_odgovor(200, $rezultat);
+
             case 'pregled':
                 $p = $s->objavljeno();
                 $b = tijelo();

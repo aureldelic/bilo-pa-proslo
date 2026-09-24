@@ -103,6 +103,48 @@ test('datum sidrenja: unos 10.9.2026. postaje ISO, neispravan se odbija', functi
         'stavke' => [['naziv' => 'A', 'cijena' => 1, 'sidrenaCijena' => 1, 'datumSidrenja' => '2026-02-31']]])) !== [], true);
 });
 
+test('uvoz CSV-a: standardna zaglavlja, iznosi, datum i akcija', function () {
+    $put = sys_get_temp_dir() . '/cjenik-uvoz-' . bin2hex(random_bytes(4)) . '.csv';
+    $zaglavlje = implode(';', Uvoz::ZAGLAVLJA);
+    file_put_contents($put, "\xEF\xBB\xBF" . $zaglavlje . "\nŠišanje;Kosa;kom;12,50;DA;Ljetna akcija;10,00;15,00;10.9.2026.;abc123\n");
+    $r = Uvoz::datoteka($put, 'cjenik.csv');
+    @unlink($put);
+    jednako($r['redaka'], 1);
+    jednako($r['stavke'][0]['id'], 'abc123');
+    jednako($r['stavke'][0]['cijena'], 12.5);
+    jednako($r['stavke'][0]['sidrenaCijena'], 15.0);
+    jednako($r['stavke'][0]['datumSidrenja'], '2026-09-10');
+    jednako($r['stavke'][0]['akcija']['aktivna'], true);
+});
+
+test('uvoz bez šifre zadržava ID postojeće iste stavke', function () {
+    $put = sys_get_temp_dir() . '/cjenik-uvoz-' . bin2hex(random_bytes(4)) . '.csv';
+    file_put_contents($put, implode(';', Uvoz::ZAGLAVLJA) . "\nServis;Bicikli;sat;40;NE;;;40;2026-09-10;\n");
+    $postojeci = [Podaci::novaStavka(['id' => 'stari123', 'kategorija' => 'Bicikli', 'naziv' => 'Servis', 'jedinica' => 'sat'])];
+    $r = Uvoz::datoteka($put, 'cjenik.csv', $postojeci);
+    @unlink($put);
+    jednako($r['stavke'][0]['id'], 'stari123');
+});
+
+test('uvoz XLSX-a čita prvi list i Excelov serijski datum', function () {
+    $put = sys_get_temp_dir() . '/cjenik-uvoz-' . bin2hex(random_bytes(4)) . '.xlsx';
+    $zip = new \ZipArchive();
+    $zip->open($put, \ZipArchive::CREATE);
+    $zip->addFromString('xl/workbook.xml', '<?xml version="1.0"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Import" sheetId="1" r:id="r1"/></sheets></workbook>');
+    $zip->addFromString('xl/_rels/workbook.xml.rels', '<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="r1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="/xl/worksheets/sheet1.xml"/></Relationships>');
+    $celija = function ($ref, $v, $tip = 'str') { return '<c r="' . $ref . '" t="' . $tip . '"><v>' . htmlspecialchars((string) $v, ENT_XML1) . '</v></c>'; };
+    $z = ''; foreach (Uvoz::ZAGLAVLJA as $i => $h) $z .= $celija(chr(65 + $i) . '1', $h);
+    $vrijednosti = ['Usluga', 'Kat', 'kom', 9.5, 'NE', '', '', 10, 46275, 'id123'];
+    $d = ''; foreach ($vrijednosti as $i => $v) if ($v !== '') $d .= $celija(chr(65 + $i) . '2', $v, is_numeric($v) ? 'n' : 'str');
+    $zip->addFromString('xl/worksheets/sheet1.xml', '<?xml version="1.0"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData><row r="1">' . $z . '</row><row r="2">' . $d . '</row></sheetData></worksheet>');
+    $zip->close();
+    $r = Uvoz::datoteka($put, 'cjenik.xlsx');
+    @unlink($put);
+    jednako($r['redaka'], 1);
+    jednako($r['stavke'][0]['datumSidrenja'], '2026-09-10');
+    jednako($r['stavke'][0]['cijena'], 9.5);
+});
+
 test('arhiva: jedna stara objava bez promjena ostaje', function () use ($pocetak) {
     $r = Arhiva::podijeli([['broj' => 1, 'datum' => Util::iso($pocetak - 90 * DAN)]], $pocetak, 30);
     jednako(count($r['zadrzi']), 1);
