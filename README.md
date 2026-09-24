@@ -254,8 +254,11 @@ Za ažuriranje repozitorij mora biti **javan**. Kod nije tajan, a podaci klijena
 Nova verzija objavljuje se tagom:
 
 ```bash
-echo "1.0.1" > cjenik/_sustav/VERZIJA
-git commit -am "Verzija 1.0.1" && git tag v1.0.1 && git push origin main v1.0.1
+nova_verzija="1.1.0"
+printf '%s\n' "$nova_verzija" > cjenik/_sustav/VERZIJA
+git commit -am "Verzija $nova_verzija"
+git tag "v$nova_verzija"
+git push origin main "v$nova_verzija"
 ```
 
 GitHub Action pokrene testove na PHP 7.4 i 8.3, napravi `bilo-pa-proslo.zip` i objavi izdanje. Ako testovi ne prođu, izdanje se ne objavljuje.
