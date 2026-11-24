@@ -441,8 +441,7 @@ if ($api) {
                             return ltrim(trim(str_replace('\\', '/', (string) $x)), '/');
                         }, (array) $b['umetni']), 'strlen')));
                     }
-                    if (isset($b['separatorVremena']) && in_array($b['separatorVremena'], [':', '-', '.'], true)) $p['separatorVremena'] = $b['separatorVremena'];
-                    if (isset($b['danaArhive'])) $p['danaArhive'] = max(30, min(365, (int) $b['danaArhive']));
+                    if (isset($b['danaArhive'])) $p['danaArhive'] = max(Arhiva::MIN_DANA, min(365, (int) $b['danaArhive']));
                     Podaci::pisiJson($s->datotekaPodataka(), $p);
                     $post = $s->postavke();
                     if (isset($b['automatskoAzuriranje'])) $post['automatskoAzuriranje'] = (bool) $b['automatskoAzuriranje'];

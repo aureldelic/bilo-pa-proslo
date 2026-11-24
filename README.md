@@ -2,17 +2,17 @@
 
 # Bilo pa prošlo
 
-**Cjenik usluga sa sidrenim cijenama (10.9.2026.). PHP plugin za web stranice.**
+**Cjenik usluga s baznim cijenama (10.9.2026.). PHP plugin za web stranice.**
 
 <a href="https://block.hr"><img src="docs/block-logo.svg" alt="BLOCK" width="40" align="right"></a>
 
 Autor: **[BLOCK](https://block.hr)**, web stranice po mjeri i privatni hosting.
 
-Plugin za objavu cjenika usluga prema odlukama iz NN 101/26 koje vrijede od 1. listopada 2026.:
+Plugin za objavu cjenika usluga prema pravilnicima Ministarstva gospodarstva koji vrijede od 17. studenoga 2026. ([NN 132/2026](https://narodne-novine.nn.hr/clanci/sluzbeni/2026_11_132_1584.html)):
 
-- **dodatna (sidrena) cijena** na dan 10. rujna 2026. uz trenutnu cijenu, u istoj tablici,
-- **strojno čitljivi cjenik** (XML, po želji i CSV) s nazivom datoteke kakav traži ministarstvo,
-- **arhiva cjenika** koja prethodne cjenike čuva najmanje 30 dana, a starije **briše sama**.
+- **bazna cijena** (cijena na dan 10. rujna 2026.) uz trenutnu cijenu, u istoj tablici ([Pravilnik o isticanju bazne cijene proizvoda](https://narodne-novine.nn.hr/clanci/sluzbeni/2026_11_132_1583.html)),
+- **strojno čitljivi cjenik** (XML i/ili CSV) s propisanim nazivom datoteke i redoslijedom podataka ([Pravilnik o načinu objave cjenika proizvoda](https://narodne-novine.nn.hr/clanci/sluzbeni/2026_11_132_1584.html)),
+- **arhiva cjenika**: prethodni cjenik ostaje dostupan nakon zamjene (propis: najmanje 15 dana), a stariji se **briše sam**.
 
 Sve radi na hostingu stranice. Klijent se prijavi u preglednik, upiše usluge i cijene i klikne *Objavi*. Ništa ne mora uploadati ni instalirati. Plugin se ažurira sam s GitHuba.
 
@@ -72,10 +72,10 @@ Na instalacijskom ekranu plugin javlja ako ne može pisati u svoje mape ili ako 
 
 Na adresi `https://stranica.hr/cjenik/admin/` se prijavi e-mailom i lozinkom i uredi:
 
-- **Obrt i objekt:** naziv, oblik objekta (salon, servis, ured…), adresa i oznaka. Ti podaci ulaze u naziv datoteke.
-- **Usluge:** opis, trenutna cijena i cijena na 10.9.2026. Kad se upiše trenutna cijena, sidrena se predloži sama. Neobavezno se dodaju kategorija, jedinica i akcija.
+- **Obrt i prodajno mjesto:** naziv, OIB ili matični broj obrta, prodajno mjesto (salon, servis, ured…), adresa i oznaka, ili kvačica *Jedan cjenik za sva prodajna mjesta*. Ti podaci ulaze u naziv datoteke.
+- **Usluge:** opis, trenutna cijena i bazna cijena (cijena na 10.9.2026.). Kad se upiše trenutna cijena, bazna se predloži sama. Neobavezno se dodaju kategorija, jedinica i akcija.
 - **Uvoz:** standardizirani Excel (`.xlsx`) ili CSV može zamijeniti sve stavke u nacrtu. Datoteka se obrađuje iz privremene upload putanje i ne sprema se na web. Uvoz ne objavljuje cjenik dok se ne klikne *Objavi*.
-- **Objavi cjenik:** nastaje novi XML, osvježi se javna stranica, umetne se tablica u stranice weba i obrišu se stari XML-ovi.
+- **Objavi cjenik:** nastaje novi XML/CSV, osvježi se javna stranica, umetne se tablica u stranice weba i obrišu se stari cjenici. Izmijenjeni cjenik objavljuje se **najkasnije do 11:00 na dan izmjene**.
 
 Izmjene se automatski spremaju kao nacrt. Javno se ništa ne mijenja dok se ne klikne *Objavi*.
 
@@ -91,8 +91,8 @@ cjenik/
 ├── tablica.html          fragment tablice za widget
 ├── cjenik-widget.js      widget za ugradnju u stranice
 ├── arhiva/
-│   ├── salon_Vukovarska_20_Osijek_01_001_01.10.2026_07:45.xml
-│   └── salon_Vukovarska_20_Osijek_01_002_15.10.2026_07:30.xml
+│   ├── 12345678901_salon_Vukovarska_20_Osijek_01_USLUGE_001_20261117_0745.xml
+│   └── 12345678901_salon_Vukovarska_20_Osijek_01_USLUGE_002_20261124_0730.xml
 ├── admin/                sučelje (prijava lozinkom)
 ├── _sustav/              kod plugina: mijenja ga ažuriranje
 └── _podaci/              podaci, lozinka i nacrt: ažuriranje ga nikad ne dira
@@ -100,42 +100,73 @@ cjenik/
 
 ### Naziv datoteke
 
-Prema pojašnjenju Ministarstva gospodarstva:
-`oblik_adresa_oznaka_brojpohrane_DD.MM.GGGG_HH:MM`
+Prema čl. 6. Pravilnika o načinu objave cjenika proizvoda:
 
+```
+OIB_prodajno mjesto_adresa_oznaka_USLUGE_broj pohrane_GGGGMMDD_HHMM
+12345678901_salon_Vukovarska_20_Osijek_01_USLUGE_004_20261124_0745.xml
+```
+
+Ako se isti cjenik koristi na svim prodajnim mjestima:
+
+```
+OIB_ZA_SVA_PRODAJNA_MJESTA_USLUGE_broj pohrane_GGGGMMDD_HHMM
+```
+
+- Umjesto OIB-a obrt može upisati matični broj.
 - Razmaci postaju `_`, a znakovi `/ \ : * ? " < > |` unutar podataka postaju `-`.
 - Broj pohrane je redni broj objave.
-- Separator vremena (`:`, `-` ili `.`) mijenja se u postavkama.
 
 ### Kada nastaje nova datoteka
 
-Nova XML datoteka nastaje **samo kad se nešto promijeni**: cijena, sidrena cijena, akcija, opis ili podaci o objektu. Objava bez promjena ne dira XML.
+Nova datoteka nastaje **samo kad se nešto promijeni**: cijena, bazna cijena, akcija, opis ili podaci o prodajnom mjestu. Objava bez promjena ne dira datoteke.
+
+Važeći cjenik uvijek je na istom mjestu (`/cjenik/`, stalne poveznice `cjenik.xml` i `cjenik.csv`), a prethodni se premještaju u `/cjenik/arhiva/`.
 
 ### Arhiva i automatsko brisanje
 
-Čuva se:
+Pravilnik traži da arhivirani cjenik bude dostupan **15 dana nakon što ga zamijeni važeći**. Plugin čuva:
 
-- sve objavljeno u zadnjih 30 dana,
-- **zadnja objava prije te granice**, jer je vrijedila na početku razdoblja, pa je najstariji XML uvijek star barem 30 dana,
-- uvijek važeći cjenik.
+- uvijek važeći cjenik,
+- svaki prethodni cjenik dok od njegove zamjene ne prođe zadani broj dana (zadano 30, najmanje 15).
 
-| Situacija | Što ostaje |
+| Situacija (zadano 30 dana) | Što ostaje |
 |---|---|
 | Jedna objava prije 90 dana, bez promjena | ta jedna (važeća) |
-| Promjena svaki dan 40 dana | zadnjih 30 + jedna s granice (31) |
-| Objave prije 100, 60 i 5 dana | ona od prije 60 i ona od prije 5 dana |
+| Cjenik zamijenjen prije 10 dana | ostaje |
+| Cjenik zamijenjen prije 40 dana | briše se |
 
-Starije datoteke plugin briše sam na serveru: pri svakoj objavi i pri svakom otvaranju sučelja. Razdoblje se može produljiti u postavkama (30–365 dana).
+Starije datoteke plugin briše sam na serveru: pri svakoj objavi i pri svakom otvaranju sučelja. Razdoblje se mijenja u postavkama (15–365 dana).
 
 ## Sadržaj cjenika usluga
+
+Prema čl. 3. st. 3. Pravilnika, podaci idu ovim redom:
+
+| Polje | U sučelju | CSV stupac | XML |
+|---|---|---|---|
+| Naziv usluge | Opis usluge | `naziv_usluge` | `<naziv>` |
+| Maloprodajna cijena usluge | Trenutna € | `maloprodajna_cijena_usluge` | `<maloprodajnaCijena>` |
+| Je li primijenjen poseban oblik prodaje | Akcija / popust | `poseban_oblik_prodaje` (`DA`/`NE`) | `<posebanOblikProdaje primijenjen="da">` |
+| Bazna cijena usluge | Bazna € + datum | `bazna_cijena_usluge` | `<baznaCijena datum="2026-09-10">` |
+
+CSV je UTF-8, sa stupcima odvojenima točkom sa zarezom i iznosima s decimalnom točkom (`25.00`). Sadrži samo ova četiri stupca. U XML-u iza propisanih podataka dolaze i kategorija, jedinica i najniža cijena u 30 dana prije akcije.
+
+- **Bazna cijena** je cijena koja je vrijedila 10.9.2026. Ako je tada bila akcija, upisuje se redovna cijena prije akcije.
+- **Nove usluge uvedene nakon 10.9.2026.:** bazna cijena je cijena s kojom je usluga uvedena, uz datum uvođenja.
+- **Usluge bez fiksne cijene:** objavljuju se elementi od kojih se cijena formira (npr. *Rad servisera, po satu*).
+- **Akcija:** najniža cijena u 30 dana prije akcije izračuna se sama iz prethodnih objava i prikazuje se u tablici na stranici.
+
+Struktura XML-a nije propisana. Ako ministarstvo objavi shemu, mijenja se `cjenik/_sustav/lib/Formati.php`, a nova verzija dođe na sve stranice kroz ažuriranje.
 
 ### Format za uvoz
 
 Prvi radni list (po mogućnosti nazvan `Import`) mora u prvom retku imati ova zaglavlja:
 
-`naziv_usluge`, `kategorija`, `jedinica_mjere`, `maloprodajna_cijena`, `naziv_posebnog_oblika_prodaje`, `najniza_cijena_30_dana`, `dodatna_cijena`, `datum_dodatne_cijene`, `sifra`.
+`naziv_usluge`, `kategorija`, `jedinica_mjere`, `maloprodajna_cijena`, `naziv_posebnog_oblika_prodaje`, `najniza_cijena_30_dana`, `bazna_cijena`, `datum_bazne_cijene`, `sifra`.
 
-Obavezni su naziv, maloprodajna cijena, dodatna cijena i datum dodatne cijene. `sifra` je stabilan identifikator; ako je prazna, plugin zadržava postojeću šifru stavke s istom kategorijom, nazivom i jedinicom ili generira novu.
+Stari nazivi `dodatna_cijena` i `datum_dodatne_cijene` i dalje se prihvaćaju, kao i stupci CSV-a koji plugin objavljuje (`maloprodajna_cijena_usluge`, `bazna_cijena_usluge`). Ako stupca s datumom nema, bazna cijena vrijedi za 10.9.2026.
+
+Obavezni su naziv, maloprodajna cijena i bazna cijena. `sifra` je stabilan identifikator; ako je prazna, plugin zadržava postojeću šifru stavke s istom kategorijom, nazivom i jedinicom ili generira novu.
 
 Poseban oblik prodaje određuje se automatski:
 
@@ -146,21 +177,6 @@ Poseban oblik prodaje određuje se automatski:
 Stariji CSV izvoz sadrži i stupac `poseban_oblik_prodaje` (`DA`/`NE`). Importer ga i dalje prihvaća, ali kad je naziv ponude popunjen, naziv ima prednost i ponuda se automatski smatra aktivnom.
 
 Uvoz prima najviše 2 MB i 2000 stavki. XLSX se čita bez raspakiravanja u javnu mapu, uz ograničenje broja i ukupne raspakirane veličine ZIP dijelova. Privremenu upload datoteku PHP uklanja nakon zahtjeva.
-
-Prema pojašnjenju ministarstva (točka 2.5.):
-
-| Polje | U sučelju | XML |
-|---|---|---|
-| Naziv usluge | Opis usluge | `<naziv>` |
-| Maloprodajna cijena | Trenutna € | `<maloprodajnaCijena>` |
-| Poseban oblik prodaje i naziv | Akcija / popust + naziv | `<posebanOblikProdaje primijenjen="da">` |
-| Dodatna cijena na dan sidrenja | Sidrena € + datum | `<dodatnaCijena datum="2026-09-10">` |
-
-- **Nove usluge uvedene nakon 10.9.2026.:** kao sidrena cijena upisuje se cijena s kojom je usluga uvedena i datum uvođenja.
-- **Usluge bez fiksne cijene:** objavljuju se elementi od kojih se cijena formira (npr. *Rad servisera, po satu*).
-- **Akcija:** najniža cijena u 30 dana prije akcije izračuna se sama iz prethodnih objava, a može se upisati i ručno.
-
-Struktura XML-a zasad nije propisana. Ako ministarstvo objavi shemu, mijenja se `cjenik/_sustav/lib/Formati.php`, a nova verzija dođe na sve stranice kroz ažuriranje.
 
 ## Tablica na stranicama weba
 

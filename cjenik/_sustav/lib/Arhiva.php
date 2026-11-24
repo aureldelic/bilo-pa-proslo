@@ -1,20 +1,22 @@
 <?php
 // Pravilo čuvanja arhive cjenika.
 //
-// Odluka: prethodno važeći cjenici moraju ostati javno dostupni najmanje 30 dana
-// od dana objave. Čuvamo:
-//   1. sve objave iz zadnjih N dana (N = danaArhive, najmanje 30),
-//   2. zadnju objavu PRIJE te granice — ona je vrijedila na dan granice, pa je
-//      najstarija datoteka u arhivi uvijek stara barem N dana (ako postoji),
-//   3. uvijek trenutno važeću (najnoviju) objavu.
-// Primjeri:
-//   - jedna objava prije 90 dana, bez promjena -> ostaje (ona je i zadnja),
-//   - promjena svaki dan 40 dana -> ostaje zadnjih 30 + ona s granice.
+// Pravilnik o načinu objave cjenika proizvoda (NN 132/2026), čl. 3. st. 6.:
+// arhivirani cjenik mora biti dostupan 15 dana nakon što ga zamijeni važeći.
+// Čuvamo:
+//   1. važeći (najnoviji) cjenik — uvijek,
+//   2. svaki prethodni cjenik dok od njegove zamjene (objave sljedećeg) nije prošlo
+//      više od N dana (N = danaArhive, najmanje 15).
+// Primjeri (N = 15):
+//   - jedna objava prije 90 dana, bez promjena -> ostaje (važeća je),
+//   - objava A zamijenjena prije 10 dana -> ostaje; zamijenjena prije 20 dana -> briše se.
 
 namespace Cjenik;
 
 final class Arhiva
 {
+    const MIN_DANA = 15;
+
     /**
      * @param array $objave [['broj'=>..,'datum'=>ISO,..], ...]
      * @return array ['zadrzi' => [...], 'obrisi' => [...]] (oba sortirana od najstarije)
@@ -25,20 +27,16 @@ final class Arhiva
             return strtotime($a['datum']) <=> strtotime($b['datum']);
         });
         $danas = Util::dan($sada);
-        $zadrzi = [];
-        $granicna = null;
-        foreach ($objave as $i => $o) {
-            if (Util::razlikaDana(Util::dan($o['datum']), $danas) < $dana) {
-                $zadrzi[$i] = true;
-            } else {
-                $granicna = $i;
-            }
-        }
-        if ($granicna !== null) $zadrzi[$granicna] = true;
-        if ($objave) $zadrzi[count($objave) - 1] = true;
-
         $r = ['zadrzi' => [], 'obrisi' => []];
-        foreach ($objave as $i => $o) $r[isset($zadrzi[$i]) ? 'zadrzi' : 'obrisi'][] = $o;
+        $zadnji = count($objave) - 1;
+        foreach ($objave as $i => $o) {
+            if ($i === $zadnji) {
+                $r['zadrzi'][] = $o;
+                continue;
+            }
+            $zamijenjen = Util::dan($objave[$i + 1]['datum']);
+            $r[Util::razlikaDana($zamijenjen, $danas) <= $dana ? 'zadrzi' : 'obrisi'][] = $o;
+        }
         return $r;
     }
 

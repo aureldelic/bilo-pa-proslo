@@ -43,7 +43,7 @@ function instalacija(): Sustav
     $s = new Sustav("$stranica/cjenik");
     zastitiMape($s);
     $p = Podaci::zadano();
-    $p['obveznik'] = ['naziv' => 'Servis Test', 'oib' => ''];
+    $p['obveznik'] = ['naziv' => 'Servis Test', 'oib' => '12345678901'];
     $p['objekt'] = ['oblik' => 'servis', 'adresa' => 'Vukovarska 20 Osijek', 'oznaka' => 'U-03'];
     $p['stavke'] = [Podaci::novaStavka(['id' => 'a1', 'naziv' => 'Servis bicikla', 'cijena' => 40, 'sidrenaCijena' => 40])];
     Podaci::pisiJson($s->datotekaPodataka(), $p);
@@ -63,14 +63,19 @@ function arhiva(Sustav $s): array
     return $d;
 }
 
-test('naziv datoteke: primjer ministarstva, bez razmaka', function () use ($pocetak) {
-    $p = Podaci::normaliziraj(['objekt' => ['oblik' => 'servis', 'adresa' => 'Vukovarska 20 Osijek', 'oznaka' => 'U-03']]);
-    jednako(Formati::nazivDatoteke($p, 15, $pocetak, 'xml'), 'servis_Vukovarska_20_Osijek_U-03_015_01.10.2026_07:45.xml');
+test('naziv datoteke prema Pravilniku NN 132/2026 (čl. 6. st. 3.)', function () use ($pocetak) {
+    $p = Podaci::normaliziraj(['obveznik' => ['oib' => '12345678901'], 'objekt' => ['oblik' => 'servis', 'adresa' => 'Vukovarska 20 Osijek', 'oznaka' => 'U-03']]);
+    jednako(Formati::nazivDatoteke($p, 15, $pocetak, 'xml'), '12345678901_servis_Vukovarska_20_Osijek_U-03_USLUGE_015_20261001_0745.xml');
+});
+
+test('naziv datoteke: jedan cjenik za sva prodajna mjesta (čl. 6. st. 4.)', function () use ($pocetak) {
+    $p = Podaci::normaliziraj(['obveznik' => ['oib' => '12345678'], 'objekt' => ['oblik' => 'salon', 'adresa' => 'x', 'oznaka' => '1', 'svaMjesta' => true]]);
+    jednako(Formati::nazivDatoteke($p, 1, $pocetak, 'csv'), '12345678_ZA_SVA_PRODAJNA_MJESTA_USLUGE_001_20261001_0745.csv');
 });
 
 test('naziv datoteke: nedopušteni znakovi postaju crtica', function () use ($pocetak) {
-    $p = Podaci::normaliziraj(['separatorVremena' => '-', 'objekt' => ['oblik' => 'salon', 'adresa' => 'Ilica 150/2_Zagreb', 'oznaka' => 'P_01']]);
-    jednako(Formati::nazivDatoteke($p, 1, $pocetak, 'xml'), 'salon_Ilica_150-2_Zagreb_P_01_001_01.10.2026_07-45.xml');
+    $p = Podaci::normaliziraj(['obveznik' => ['oib' => '12345678901'], 'objekt' => ['oblik' => 'salon', 'adresa' => 'Ilica 150/2_Zagreb', 'oznaka' => 'P_01']]);
+    jednako(Formati::nazivDatoteke($p, 1, $pocetak, 'xml'), '12345678901_salon_Ilica_150-2_Zagreb_P_01_USLUGE_001_20261001_0745.xml');
 });
 
 test('ISO datum s lokalnim pomakom (ljetno i zimsko vrijeme)', function () {
@@ -96,7 +101,7 @@ test('datum sidrenja: unos 10.9.2026. postaje ISO, neispravan se odbija', functi
     jednako(Podaci::datumIso('10.9.2026.'), '2026-09-10');
     jednako(Podaci::datumIso(' 1.10.2026 '), '2026-10-01');
     jednako(Podaci::datumIso('2026-09-10'), '2026-09-10');
-    $p = Podaci::normaliziraj(['obveznik' => ['naziv' => 'x'], 'objekt' => ['oblik' => 's', 'adresa' => 'a', 'oznaka' => '1'],
+    $p = Podaci::normaliziraj(['obveznik' => ['naziv' => 'x', 'oib' => '12345678901'], 'objekt' => ['oblik' => 's', 'adresa' => 'a', 'oznaka' => '1'],
         'stavke' => [['naziv' => 'A', 'cijena' => 1, 'sidrenaCijena' => 1, 'datumSidrenja' => '31.2.2026.']]]);
     jednako(count(Podaci::provjeri($p)), 1);
     jednako(Podaci::provjeri(Podaci::normaliziraj(['obveznik' => ['naziv' => 'x'], 'objekt' => ['oblik' => 's', 'adresa' => 'a', 'oznaka' => '1'],
@@ -151,16 +156,25 @@ test('arhiva: jedna stara objava bez promjena ostaje', function () use ($pocetak
     jednako(count($r['obrisi']), 0);
 });
 
-test('arhiva: promjena svaki dan 40 dana -> zadnjih 30 + ona s granice', function () use ($pocetak) {
+test('arhiva: promjena svaki dan 40 dana, čuva se 15 dana nakon zamjene', function () use ($pocetak) {
     $o = [];
     for ($i = 0; $i < 40; $i++) $o[] = ['broj' => $i + 1, 'datum' => Util::iso($pocetak - (39 - $i) * DAN)];
+    // Objava s dana i zamijenjena je na dan i+1; danas je dan 39.
+    $r = Arhiva::podijeli($o, $pocetak, 15);
+    jednako(count($r['zadrzi']), 17);
+    jednako($r['zadrzi'][0]['broj'], 24, 'zamijenjena prije točno 15 dana još ostaje');
     $r = Arhiva::podijeli($o, $pocetak, 30);
-    jednako(count($r['zadrzi']), 31);
-    jednako(count($r['obrisi']), 9);
-    jednako($r['zadrzi'][0]['broj'], 10);
+    jednako(count($r['zadrzi']), 32);
 });
 
-test('arhiva: stara objava ostaje dok je bila važeća na granici', function () use ($pocetak) {
+test('arhiva: granica 15 dana nakon zamjene', function () use ($pocetak) {
+    $o = [['broj' => 1, 'datum' => Util::iso($pocetak - 40 * DAN)], ['broj' => 2, 'datum' => Util::iso($pocetak - 15 * DAN)]];
+    jednako(array_column(Arhiva::podijeli($o, $pocetak, 15)['zadrzi'], 'broj'), [1, 2]);
+    $o[1]['datum'] = Util::iso($pocetak - 16 * DAN);
+    jednako(array_column(Arhiva::podijeli($o, $pocetak, 15)['zadrzi'], 'broj'), [2]);
+});
+
+test('arhiva: zamijenjena davno se briše, nedavno zamijenjena ostaje', function () use ($pocetak) {
     $r = Arhiva::podijeli([
         ['broj' => 1, 'datum' => Util::iso($pocetak - 100 * DAN)],
         ['broj' => 2, 'datum' => Util::iso($pocetak - 60 * DAN)],
@@ -174,7 +188,7 @@ test('objava: nova datoteka samo kad se cijena promijeni', function () use ($poc
     $o = new Objava($s);
     $r1 = $o->objavi($s->objavljeno(), $pocetak);
     jednako($r1['nova']['broj'], 1);
-    jednako(arhiva($s), ['servis_Vukovarska_20_Osijek_U-03_001_01.10.2026_07:45.xml']);
+    jednako(arhiva($s), ['12345678901_servis_Vukovarska_20_Osijek_U-03_USLUGE_001_20261001_0745.xml']);
 
     $r2 = $o->objavi($s->objavljeno(), $pocetak + DAN);
     jednako($r2['nova'], null);
@@ -189,7 +203,8 @@ test('objava: nova datoteka samo kad se cijena promijeni', function () use ($poc
     $xml = file_get_contents($s->korijen() . '/cjenik.xml');
     sadrzi($xml, '<brojPohrane>2</brojPohrane>');
     sadrzi($xml, '<maloprodajnaCijena valuta="EUR">45.00</maloprodajnaCijena>');
-    sadrzi($xml, '<dodatnaCijena valuta="EUR" datum="2026-09-10">40.00</dodatnaCijena>');
+    sadrzi($xml, '<baznaCijena valuta="EUR" datum="2026-09-10">40.00</baznaCijena>');
+    sadrzi($xml, '<oibIliMaticniBroj>12345678901</oibIliMaticniBroj>');
     jednako(simplexml_load_string($xml) !== false, true, 'XML je ispravan');
     sadrzi(file_get_contents($s->korijen() . '/index.html'), 'Servis bicikla');
     jednako(is_file($s->korijen() . '/cjenik-widget.js'), true);
@@ -204,9 +219,10 @@ test('objava: 40 dnevnih promjena briše datoteke izvan arhive', function () use
         $o->objavi($p, $pocetak + $i * DAN);
     }
     $d = arhiva($s);
-    jednako(count($d), 31);
-    jednako(count($s->objavljeno()['objave']), 31);
-    jednako(strpos($d[0], '_010_') !== false, true, 'najstarija je br. 10');
+    // Zadano: 30 dana nakon zamjene.
+    jednako(count($d), 32);
+    jednako(count($s->objavljeno()['objave']), 32);
+    jednako(strpos($d[0], '_USLUGE_009_') !== false, true, 'najstarija je br. 9');
     jednako($s->objavljeno()['brojPohrane'], 40);
 });
 
@@ -221,7 +237,7 @@ test('čišćenje arhive bez nove objave (cijene se dugo ne mijenjaju)', functio
     $p['stavke'][0]['cijena'] = 55;
     $o->objavi($p, $pocetak + 2 * DAN);
     jednako(count(arhiva($s)), 3);
-    // 60 dana kasnije: ostaje samo važeća (ona je i granična).
+    // 60 dana kasnije: prethodne su zamijenjene davno, ostaje samo važeća.
     $obrisano = $o->pocisti($pocetak + 62 * DAN);
     jednako(count($obrisano), 2);
     jednako(count(arhiva($s)), 1);
@@ -606,6 +622,35 @@ test('provjera zaštite uvijek ide na vlastiti poslužitelj (podmetnut Host)', f
     $r = Sigurnost::provjeri($s, "http://napadac.invalid:$port/cjenik/admin/", '127.0.0.1');
     proc_terminate($proces);
     jednako($r['stanje'], 'ok', $r['poruka']);
+});
+
+test('CSV: propisani stupci, propisanim redom, UTF-8 bez BOM-a', function () use ($pocetak) {
+    $p = Podaci::normaliziraj(['stavke' => [
+        ['naziv' => 'Šišanje; kratka kosa', 'cijena' => 25, 'sidrenaCijena' => 22],
+        ['naziv' => 'Pramenovi', 'cijena' => 68, 'sidrenaCijena' => 80, 'akcija' => ['aktivna' => true, 'naziv' => 'Jesen', 'najniza30' => 80]],
+    ]]);
+    jednako(Formati::csv($p), "naziv_usluge;maloprodajna_cijena_usluge;poseban_oblik_prodaje;bazna_cijena_usluge\r\n"
+        . "\"Šišanje; kratka kosa\";25.00;NE;22.00\r\nPramenovi;68.00;DA;80.00\r\n");
+});
+
+test('uvoz prihvaća CSV koji plugin objavljuje (bazna cijena, bez datuma)', function () {
+    $p = Podaci::normaliziraj(['stavke' => [['naziv' => 'Muško šišanje', 'cijena' => 15, 'sidrenaCijena' => 14]]]);
+    $put = sys_get_temp_dir() . '/uvoz-' . bin2hex(random_bytes(4)) . '.csv';
+    file_put_contents($put, Formati::csv($p));
+    $r = Uvoz::datoteka($put, 'cjenik.csv');
+    jednako($r['stavke'][0]['naziv'], 'Muško šišanje');
+    jednako($r['stavke'][0]['sidrenaCijena'], 14.0);
+    jednako($r['stavke'][0]['datumSidrenja'], '2026-09-10');
+});
+
+test('provjera: OIB ili matični broj je obavezan', function () {
+    $osnova = ['obveznik' => ['naziv' => 'x', 'oib' => ''], 'objekt' => ['oblik' => 's', 'adresa' => 'a', 'oznaka' => '1'],
+        'stavke' => [['naziv' => 'A', 'cijena' => 1, 'sidrenaCijena' => 1]]];
+    sadrzi(implode(' ', Podaci::provjeri(Podaci::normaliziraj($osnova))), 'OIB ili matični broj');
+    $osnova['obveznik']['oib'] = '12345678';
+    jednako(Podaci::provjeri(Podaci::normaliziraj($osnova)), []);
+    $osnova['objekt'] = ['oblik' => '', 'adresa' => '', 'oznaka' => '', 'svaMjesta' => true];
+    jednako(Podaci::provjeri(Podaci::normaliziraj($osnova)), [], 'za sva mjesta adresa nije potrebna');
 });
 
 echo "\n$prolaz prošlo, $pad palo\n";

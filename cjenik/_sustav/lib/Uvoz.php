@@ -177,15 +177,25 @@ final class Uvoz
     private static function redovi(array $redovi, array $postojeci): array
     {
         if (!$redovi) throw new \RuntimeException('Datoteka nema podataka.');
-        $zaglavlje = array_map(function ($v) { return strtolower(trim((string) $v)); }, array_shift($redovi));
+        // Nazivi prema Pravilniku (NN 132/2026) i stari nazivi ("dodatna cijena") znače isto.
+        $aliasi = [
+            'bazna_cijena' => 'dodatna_cijena', 'bazna_cijena_usluge' => 'dodatna_cijena',
+            'datum_bazne_cijene' => 'datum_dodatne_cijene', 'maloprodajna_cijena_usluge' => 'maloprodajna_cijena',
+        ];
+        $zaglavlje = array_map(function ($v) use ($aliasi) {
+            $h = strtolower(trim((string) $v));
+            return $aliasi[$h] ?? $h;
+        }, array_shift($redovi));
         $indeksi = [];
         foreach (self::ZAGLAVLJA as $h) {
             $i = array_search($h, $zaglavlje, true);
             if ($i !== false) $indeksi[$h] = $i;
         }
-        foreach (['naziv_usluge', 'maloprodajna_cijena', 'dodatna_cijena', 'datum_dodatne_cijene'] as $obavezno) {
-            if (!isset($indeksi[$obavezno])) throw new \RuntimeException("Nedostaje obavezni stupac: $obavezno.");
+        foreach (['naziv_usluge' => 'naziv_usluge', 'maloprodajna_cijena' => 'maloprodajna_cijena', 'dodatna_cijena' => 'bazna_cijena'] as $obavezno => $ime) {
+            if (!isset($indeksi[$obavezno])) throw new \RuntimeException("Nedostaje obavezni stupac: $ime.");
         }
+        // CSV izvezen prema Pravilniku nema datum bazne cijene; tada vrijedi 10.9.2026.
+        $bezDatuma = !isset($indeksi['datum_dodatne_cijene']);
 
         $stariPoKljucu = [];
         foreach ($postojeci as $s) {
@@ -207,7 +217,7 @@ final class Uvoz
             $jedinica = trim((string) $v('jedinica_mjere'));
             $cijena = Util::parsirajIznos($v('maloprodajna_cijena'));
             $sidrena = Util::parsirajIznos($v('dodatna_cijena'));
-            $datum = self::datum($v('datum_dodatne_cijene'));
+            $datum = $bezDatuma ? Util::DATUM_SIDRENJA : self::datum($v('datum_dodatne_cijene'));
             $akcijaTekst = strtoupper(trim((string) $v('poseban_oblik_prodaje')));
             if ($akcijaTekst !== '' && !in_array($akcijaTekst, ['DA', 'NE', 'YES', 'NO', '1', '0', 'TRUE', 'FALSE'], true)) {
                 $greske[] = "Red $br: poseban_oblik_prodaje mora biti DA ili NE.";
@@ -219,8 +229,8 @@ final class Uvoz
             $sifre[$sifra] = $br;
             if ($naziv === '') $greske[] = "Red $br: nedostaje naziv_usluge.";
             if ($cijena === null || (is_float($cijena) && is_nan($cijena))) $greske[] = "Red $br: neispravna maloprodajna_cijena.";
-            if ($sidrena === null || (is_float($sidrena) && is_nan($sidrena))) $greske[] = "Red $br: neispravna dodatna_cijena.";
-            if ($datum === '') $greske[] = "Red $br: neispravan datum_dodatne_cijene.";
+            if ($sidrena === null || (is_float($sidrena) && is_nan($sidrena))) $greske[] = "Red $br: neispravna bazna_cijena.";
+            if ($datum === '') $greske[] = "Red $br: neispravan datum_bazne_cijene.";
             $nazivAkcije = trim((string) $v('naziv_posebnog_oblika_prodaje'));
             $najniza = Util::parsirajIznos($v('najniza_cijena_30_dana'));
             if (is_float($najniza) && is_nan($najniza)) $greske[] = "Red $br: neispravna najniza_cijena_30_dana.";

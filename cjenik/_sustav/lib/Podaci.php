@@ -13,10 +13,9 @@ final class Podaci
     {
         return [
             'obveznik' => ['naziv' => '', 'oib' => ''],
-            'objekt' => ['oblik' => 'servis', 'adresa' => '', 'oznaka' => '01'],
+            'objekt' => ['oblik' => 'servis', 'adresa' => '', 'oznaka' => '01', 'svaMjesta' => false],
             'formati' => ['xml'],
             'danaArhive' => 30,
-            'separatorVremena' => ':',
             'umetni' => [],
             'naslovStranice' => 'Cjenik usluga',
             'napomena' => 'Cijene su iskazane u eurima (EUR).',
@@ -86,18 +85,18 @@ final class Podaci
     public static function normaliziraj(array $p): array
     {
         $p = array_replace(self::zadano(), $p);
-        $p['obveznik'] = ['naziv' => self::tekst($p['obveznik']['naziv'] ?? ''), 'oib' => self::tekst($p['obveznik']['oib'] ?? '', 11)];
+        $p['obveznik'] = ['naziv' => self::tekst($p['obveznik']['naziv'] ?? ''), 'oib' => preg_replace('/\s+/', '', self::tekst($p['obveznik']['oib'] ?? '', 20))];
         $p['objekt'] = [
             'oblik' => self::tekst($p['objekt']['oblik'] ?? '', 60),
             'adresa' => self::tekst($p['objekt']['adresa'] ?? '', 120),
             'oznaka' => self::tekst($p['objekt']['oznaka'] ?? '', 30),
+            'svaMjesta' => !empty($p['objekt']['svaMjesta']),
         ];
         $p['naslovStranice'] = self::tekst($p['naslovStranice']);
         $p['napomena'] = self::tekst($p['napomena'], 1000);
-        $p['danaArhive'] = max(30, (int) $p['danaArhive']);
+        $p['danaArhive'] = max(Arhiva::MIN_DANA, (int) $p['danaArhive']);
         $p['tema'] = $p['tema'] === 'tamna' ? 'tamna' : 'svijetla';
         $p['formati'] = array_values(array_intersect(['xml', 'csv'], (array) $p['formati'])) ?: ['xml'];
-        $p['separatorVremena'] = in_array($p['separatorVremena'], [':', '-', '.'], true) ? $p['separatorVremena'] : ':';
         $p['stavke'] = array_map(function ($s) {
             $s = self::novaStavka(is_array($s) ? $s : []);
             $s['kategorija'] = self::tekst($s['kategorija'], 120);
@@ -134,17 +133,21 @@ final class Podaci
     {
         $g = [];
         if ($p['obveznik']['naziv'] === '') $g[] = 'Upiši naziv obrta/tvrtke.';
-        if ($p['obveznik']['oib'] !== '' && !preg_match('/^\d{11}$/', $p['obveznik']['oib'])) $g[] = 'OIB mora imati 11 znamenki.';
-        if ($p['objekt']['oblik'] === '') $g[] = 'Upiši oblik/vrstu objekta (npr. servis, salon, ured).';
-        if ($p['objekt']['adresa'] === '') $g[] = 'Upiši adresu objekta.';
-        if ($p['objekt']['oznaka'] === '') $g[] = 'Upiši oznaku objekta (npr. 01 ili U-01).';
+        // Pravilnik (čl. 6.): naziv datoteke počinje OIB-om ili matičnim brojem (obrt).
+        if ($p['obveznik']['oib'] === '') $g[] = 'Upiši OIB ili matični broj obrta (ulazi u naziv datoteke).';
+        elseif (!preg_match('/^\d{7,11}$/', $p['obveznik']['oib'])) $g[] = 'OIB ima 11 znamenki, a matični broj obrta 8.';
+        if (!$p['objekt']['svaMjesta']) {
+            if ($p['objekt']['oblik'] === '') $g[] = 'Upiši prodajno mjesto (vrstu objekta, npr. salon, servis, ured).';
+            if ($p['objekt']['adresa'] === '') $g[] = 'Upiši adresu prodajnog mjesta.';
+            if ($p['objekt']['oznaka'] === '') $g[] = 'Upiši oznaku prodajnog mjesta (npr. 01 ili U-01).';
+        }
         if (!$p['stavke']) $g[] = 'Dodaj barem jednu uslugu.';
         foreach ($p['stavke'] as $i => $s) {
             $r = 'Red ' . ($i + 1) . ($s['naziv'] !== '' ? " ({$s['naziv']})" : '');
             if ($s['naziv'] === '') $g[] = "$r: nedostaje opis usluge.";
             if (self::neispravan($s['cijena'])) $g[] = "$r: neispravna trenutna cijena.";
-            if (self::neispravan($s['sidrenaCijena'])) $g[] = "$r: neispravna cijena na datum sidrenja.";
-            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $s['datumSidrenja'])) $g[] = "$r: neispravan datum sidrenja (upiši npr. 10.9.2026.).";
+            if (self::neispravan($s['sidrenaCijena'])) $g[] = "$r: neispravna bazna cijena.";
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $s['datumSidrenja'])) $g[] = "$r: neispravan datum bazne cijene (upiši npr. 10.9.2026.).";
             if ($s['akcija']['aktivna'] && $s['akcija']['naziv'] === '') $g[] = "$r: upiši naziv posebnog oblika prodaje (npr. \"Jesenska akcija\").";
             $n = $s['akcija']['najniza30'];
             if (is_float($n) && is_nan($n)) $g[] = "$r: neispravna najniža cijena u 30 dana.";

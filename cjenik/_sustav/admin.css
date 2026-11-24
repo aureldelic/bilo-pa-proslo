@@ -149,3 +149,5 @@ html[data-tema="tamna"] #pregled{background:#1d1d1b;color:#eeece6}
 .usluge input.datum{font-variant-numeric:tabular-nums}
 #statusZastite a{color:inherit}
 @media (max-width:520px){#pregled{padding:2px 4px 10px;margin:0 -8px}.karta{padding:16px 14px}}
+.kvacica-polje .kvacica{margin:0;min-height:38px;color:var(--tekst)}
+.mjesto input:disabled{opacity:.45}

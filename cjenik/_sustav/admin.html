@@ -40,14 +40,15 @@
   <div class="greske" id="greske" hidden></div>
 
   <section class="karta">
-    <h2>Obrt i prodajni objekt</h2>
-    <p class="opis">Ovi podaci ulaze u naziv datoteke i zaglavlje XML-a.</p>
+    <h2>Obrt i prodajno mjesto</h2>
+    <p class="opis">Ovi podaci ulaze u naziv datoteke (Pravilnik o načinu objave cjenika, NN 132/2026) i zaglavlje XML-a.</p>
     <div class="polja">
       <label class="polje">Naziv obrta / tvrtke<input type="text" data-p="obveznik.naziv" placeholder="npr. Frizerski salon Ana, vl. Ana Anić"></label>
-      <label class="polje">OIB (neobavezno)<input type="text" data-p="obveznik.oib" inputmode="numeric" maxlength="11"></label>
-      <label class="polje">Oblik / vrsta objekta<input type="text" data-p="objekt.oblik" list="oblici" placeholder="servis, salon, ured…"></label>
-      <label class="polje">Adresa objekta<input type="text" data-p="objekt.adresa" placeholder="Vukovarska 20 Osijek"></label>
-      <label class="polje">Oznaka objekta<input type="text" data-p="objekt.oznaka" placeholder="01 ili U-01"></label>
+      <label class="polje">OIB ili matični broj obrta<input type="text" data-p="obveznik.oib" inputmode="numeric" maxlength="11" placeholder="11 znamenki (OIB) ili 8 (MB obrta)"></label>
+      <label class="polje kvacica-polje"><span>Prodajna mjesta</span><span class="kvacica"><input type="checkbox" data-p="objekt.svaMjesta"> Jedan cjenik za sva prodajna mjesta</span></label>
+      <label class="polje mjesto">Prodajno mjesto (vrsta)<input type="text" data-p="objekt.oblik" list="oblici" placeholder="servis, salon, ured…"></label>
+      <label class="polje mjesto">Adresa prodajnog mjesta<input type="text" data-p="objekt.adresa" placeholder="Vukovarska 20 Osijek"></label>
+      <label class="polje mjesto">Oznaka prodajnog mjesta<input type="text" data-p="objekt.oznaka" placeholder="01 ili U-01"></label>
       <label class="polje">Naslov javne stranice<input type="text" data-p="naslovStranice"></label>
       <label class="polje" style="grid-column:1/-1">Napomena ispod tablice<input type="text" data-p="napomena"></label>
     </div>
@@ -62,12 +63,12 @@
 
   <section class="karta">
     <h2>Usluge i cijene</h2>
-    <p class="opis">Uz trenutnu cijenu upiši cijenu koja je vrijedila 10.9.2026. (redovnu, bez akcije). Ako se cijena nije mijenjala, obje su iste.</p>
+    <p class="opis">Uz trenutnu cijenu upiši <b>baznu cijenu</b>: cijenu koja je vrijedila 10.9.2026. (redovnu, bez akcije). Ako se cijena nije mijenjala, obje su iste. Izmijenjeni cjenik objavi najkasnije do 11:00 na dan izmjene.</p>
     <table class="usluge">
       <thead><tr>
         <th class="c-kat">Kategorija</th><th class="c-naz">Opis usluge</th><th class="c-jed">Jedinica</th>
-        <th class="c-iznos" style="text-align:right">Trenutna €</th><th class="c-iznos" style="text-align:right">Sidrena €</th>
-        <th class="c-dat">Datum sidrenja</th><th class="c-akc">Poseban oblik prodaje</th><th class="c-akcije"></th>
+        <th class="c-iznos" style="text-align:right">Trenutna €</th><th class="c-iznos" style="text-align:right">Bazna €</th>
+        <th class="c-dat">Datum bazne</th><th class="c-akc">Poseban oblik prodaje</th><th class="c-akcije"></th>
       </tr></thead>
       <tbody id="retci"></tbody>
     </table>
@@ -94,7 +95,7 @@
     </section>
     <section class="karta">
       <h2>Objavljeni cjenici</h2>
-      <p class="opis">Nova datoteka nastaje samo kad se cijene ili podaci promijene. Čuva se sve iz zadnjih <span id="dana">30</span> dana i zadnja objava prije toga; starije se brišu same.</p>
+      <p class="opis">Nova datoteka nastaje samo kad se cijene ili podaci promijene. Prethodni cjenik ostaje dostupan <span id="dana">30</span> dana nakon što ga zamijeni novi, a onda se briše sam.</p>
       <ul class="arhiva" id="arhiva"></ul>
     </section>
   </div>
@@ -111,11 +112,8 @@
 &lt;script src="/cjenik/cjenik-widget.js" defer&gt;&lt;/script&gt;</pre>
       </div>
       <div>
-        <h3>Arhiva i nazivi datoteka</h3>
-        <label class="polje">Čuvaj cjenike (dana, najmanje 30)<input type="number" id="danaArhive" min="30" max="365"></label>
-        <label class="polje">Separator vremena u nazivu datoteke
-          <select id="separatorVremena"><option value=":">07:45 (kao u primjeru ministarstva)</option><option value="-">07-45</option><option value=".">07.45</option></select>
-        </label>
+        <h3>Arhiva</h3>
+        <label class="polje">Koliko dana nakon zamjene čuvati prethodni cjenik (propis: najmanje 15)<input type="number" id="danaArhive" min="15" max="365"></label>
         <button class="gumb mali" id="spremiPostavke">Spremi postavke</button>
       </div>
       <div>
@@ -171,8 +169,8 @@
     <td class="c-naz"><span class="mob">Opis usluge</span><input type="text" data-s="naziv" placeholder="npr. Muško šišanje"></td>
     <td class="c-jed"><span class="mob">Jedinica</span><input type="text" data-s="jedinica" placeholder="neobavezno" title="npr. po satu, po komadu"></td>
     <td class="c-iznos"><span class="mob">Trenutna cijena €</span><input type="text" class="iznos" data-s="cijena" inputmode="decimal" placeholder="0,00"></td>
-    <td class="c-iznos"><span class="mob">Cijena na datum sidrenja €</span><input type="text" class="iznos" data-s="sidrenaCijena" inputmode="decimal" placeholder="0,00"></td>
-    <td class="c-dat"><span class="mob">Datum sidrenja</span><input type="text" class="datum" data-s="datumSidrenja" inputmode="decimal" placeholder="10.9.2026." title="Upiši datum kao 10.9.2026."></td>
+    <td class="c-iznos"><span class="mob">Bazna cijena €</span><input type="text" class="iznos" data-s="sidrenaCijena" inputmode="decimal" placeholder="0,00"></td>
+    <td class="c-dat"><span class="mob">Datum bazne cijene</span><input type="text" class="datum" data-s="datumSidrenja" inputmode="decimal" placeholder="10.9.2026." title="Upiši datum kao 10.9.2026."></td>
     <td class="c-akc"><div class="akcija-celija">
       <label><input type="checkbox" data-s="akcija.aktivna"> Akcija / popust</label>
       <input type="text" data-s="akcija.naziv" placeholder="Naziv, npr. Jesenska akcija" hidden>
@@ -262,7 +260,10 @@ function poruka(t, trajanje = 4200) {
 
 /* ---------- Iscrtavanje ---------- */
 function iscrtajPolja() {
-  document.querySelectorAll('[data-p]').forEach((el) => { el.value = dohvati(podaci, el.dataset.p) ?? ''; });
+  document.querySelectorAll('[data-p]').forEach((el) => {
+    if (el.type === 'checkbox') el.checked = !!dohvati(podaci, el.dataset.p);
+    else el.value = dohvati(podaci, el.dataset.p) ?? '';
+  });
   document.querySelectorAll('[data-format]').forEach((el) => { el.checked = (podaci.formati || []).includes(el.dataset.format); });
 }
 
@@ -346,7 +347,6 @@ function iscrtajStanje(st) {
 function iscrtajPostavke() {
   $('#umetni').value = (podaci.umetni || []).join('\n');
   $('#danaArhive').value = podaci.danaArhive || 30;
-  $('#separatorVremena').value = podaci.separatorVremena || ':';
   $('#automatskoAzuriranje').checked = !!sustav.automatskoAzuriranje;
   $('#email').value = sustav.email || '';
   $('#bezEmaila').hidden = !!sustav.email;
@@ -370,9 +370,12 @@ function iducaDatoteka() {
     .formatToParts(new Date()).reduce((a, p) => ((a[p.type] = p.value), a), {});
   const cisti = (s) => String(s || '').trim().replace(/[\\/:*?"<>|]+/g, '-').replace(/[\s_]+/g, '_') || '…';
   const broj = String((podaci.brojPohrane || 0) + 1).padStart(3, '0');
-  const sep = podaci.separatorVremena || ':';
-  $('#iducaDatoteka').textContent = [cisti(podaci.objekt.oblik), cisti(podaci.objekt.adresa), cisti(podaci.objekt.oznaka), broj,
-    `${d.day}.${d.month}.${d.year}`, `${d.hour}${sep}${d.minute}`].join('_') + '.xml';
+  // Pravilnik (NN 132/2026), čl. 6.: OIB_mjesto_adresa_oznaka_USLUGE_broj_GGGGMMDD_HHMM
+  const o = podaci.objekt;
+  const mjesto = o.svaMjesta ? ['ZA_SVA_PRODAJNA_MJESTA'] : [cisti(o.oblik), cisti(o.adresa), cisti(o.oznaka)];
+  $('#iducaDatoteka').textContent = [cisti(podaci.obveznik.oib), ...mjesto, 'USLUGE', broj,
+    `${d.year}${d.month}${d.day}`, `${d.hour}${d.minute}`].join('_') + '.xml';
+  document.querySelectorAll('.mjesto input').forEach((el) => { el.disabled = !!o.svaMjesta; });
 }
 
 function prikaziGreske(g) {
@@ -421,7 +424,7 @@ function broj(v) {
 /* ---------- Događaji ---------- */
 document.addEventListener('input', (e) => {
   const el = e.target;
-  if (el.dataset.p) { postavi(podaci, el.dataset.p, el.value); promjena(); }
+  if (el.dataset.p) { postavi(podaci, el.dataset.p, el.type === 'checkbox' ? el.checked : el.value); promjena(); }
   if (el.dataset.format) {
     const f = new Set(podaci.formati || []);
     el.checked ? f.add(el.dataset.format) : f.delete(el.dataset.format);
@@ -544,13 +547,11 @@ async function spremiPostavke(dodatno = {}) {
   const r = await api('postavke', {
     umetni: $('#umetni').value.split('\n').map((x) => x.trim()).filter(Boolean),
     danaArhive: +$('#danaArhive').value || 30,
-    separatorVremena: $('#separatorVremena').value,
     automatskoAzuriranje: $('#automatskoAzuriranje').checked,
     ...dodatno,
   });
   podaci.umetni = r.podaci.umetni;
   podaci.danaArhive = r.podaci.danaArhive;
-  podaci.separatorVremena = r.podaci.separatorVremena;
   iscrtajStanje(r);
   iscrtajPostavke();
   poruka(r.upozorenja?.length ? r.upozorenja.join(' ') : 'Postavke su spremljene.', 6000);

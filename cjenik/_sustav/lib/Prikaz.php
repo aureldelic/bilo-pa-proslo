@@ -30,7 +30,7 @@ final class Prikaz
 @media (max-width:520px){.cjenik-tablica{font-size:.92rem}.cjenik-tablica thead .cjenik-iznos{white-space:normal;min-width:5.5em}.cjenik-tablica th,.cjenik-tablica td{padding:.6em .45em}}
 ';
 
-    /** Najčešći datum sidrenja — ide u zaglavlje stupca; iznimke se označe u retku. */
+    /** Najčešći datum bazne cijene — ide u zaglavlje stupca; iznimke se označe u retku. */
     private static function glavniDatum(array $stavke): string
     {
         $broj = [];
@@ -123,7 +123,7 @@ final class Prikaz
         $naslov = Util::esc($p['naslovStranice']);
         $naziv = Util::esc($p['obveznik']['naziv']);
         $adresa = Util::esc($p['objekt']['adresa']);
-        $oib = $p['obveznik']['oib'] !== '' ? ' · OIB ' . Util::esc($p['obveznik']['oib']) : '';
+        $oib = $p['obveznik']['oib'] !== '' ? (strlen($p['obveznik']['oib']) === 11 ? ' · OIB ' : ' · MB ') . Util::esc($p['obveznik']['oib']) : '';
         $tablica = self::tablica($p, ['datum' => $aktualna['datum'] ?? null]);
         $dana = (int) $p['danaArhive'];
         $css = self::CSS;
@@ -172,7 +172,7 @@ $tablica
 </section>
 <section class="karta">
 <h2>Strojno čitljivi cjenik</h2>
-<p class="opis">Stalna poveznica na važeći cjenik: $stalne. Prethodni cjenici dostupni su najmanje $dana dana od objave.</p>
+<p class="opis">Stalna poveznica na važeći cjenik: $stalne. Prethodni cjenici ostaju dostupni $dana dana nakon što ih zamijeni novi.</p>
 <ul class="arhiva">
 $redoviArhive</ul>
 </section>
