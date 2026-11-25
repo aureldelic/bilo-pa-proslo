@@ -165,10 +165,10 @@ body{margin:0;background:var(--pozadina);color:var(--tekst);font:16px/1.55 syste
 .obrt{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--blago);font-size:1rem;align-items:center}
 .obrt strong{color:var(--tekst);font-weight:600}
 .znacka{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;background:var(--akcent-blago);color:var(--akcent);font-size:.85rem;font-weight:600}
-.raspored{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start;padding-bottom:64px}
+.raspored{display:grid;gap:24px;padding-bottom:64px}
 .karta{background:var(--povrsina);border:1px solid var(--rub);border-radius:18px;box-shadow:var(--sjena)}
-.glavna{padding:12px 28px 24px}
-.strana{display:grid;gap:24px;position:sticky;top:24px}
+.glavna{padding:12px 32px 28px}
+.strana{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;align-items:stretch}
 .strana .karta{padding:22px 22px 18px}
 .strana h2{font-size:1rem;margin:0 0 6px;letter-spacing:-.01em}
 .opis{color:var(--blago);font-size:.9rem;margin:0 0 14px}
@@ -176,7 +176,7 @@ body{margin:0;background:var(--pozadina);color:var(--tekst);font:16px/1.55 syste
 .gumb{display:inline-flex;align-items:center;padding:9px 16px;border-radius:10px;background:var(--akcent);color:#fff;text-decoration:none;font-weight:600;font-size:.9rem}
 html[data-tema="tamna"] .gumb{color:#10161f}
 .gumb:hover{filter:brightness(1.08)}
-.arhiva{list-style:none;margin:0;padding:0;font-size:.9rem}
+.arhiva{list-style:none;margin:0;padding:0;font-size:.9rem;max-height:420px;overflow:auto}
 .arhiva li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--rub)}
 .arhiva .kada{display:block;font-weight:500}
 .arhiva .br{display:block;color:var(--blago);font-size:.8rem}
@@ -194,15 +194,13 @@ $css
 .glavna .cjenik-tablica tbody tr:not(.cjenik-kategorija):hover td{background:color-mix(in srgb,var(--akcent-blago) 55%,transparent)}
 .glavna .cjenik-tablica .cjenik-cijena{font-size:1.08em}
 .glavna .cjenik-podnozje{margin:18px 1em 0}
-@media (max-width:980px){
-  .raspored{grid-template-columns:1fr}
-  .strana{position:static;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+@media (max-width:760px){
+  .strana{grid-template-columns:1fr}
 }
 @media (max-width:640px){
   .okvir{padding:0 12px}
   .zaglavlje{padding-top:32px;padding-bottom:20px}
   .glavna{padding:4px 16px 16px;border-radius:14px}
-  .strana{grid-template-columns:1fr}
 }
 @media (max-width:560px){
   .glavna .cjenik-tablica tr{padding:1em 0}
