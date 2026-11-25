@@ -138,7 +138,8 @@ final class Prikaz
         $naziv = Util::esc($p['obveznik']['naziv']);
         $adresa = !empty($p['objekt']['svaMjesta']) ? 'Sva prodajna mjesta' : Util::esc($p['objekt']['adresa']);
         $oib = $p['obveznik']['oib'] !== '' ? ' · ' . (strlen($p['obveznik']['oib']) === 11 ? 'OIB ' : 'MB ') . Util::esc($p['obveznik']['oib']) : '';
-        $tablica = self::tablica($p, ['datum' => $aktualna['datum'] ?? null]);
+        $vrijedi = $aktualna ? '<div class="vrijedi"><span>Ažurirano</span><strong>' . Util::esc(Util::datumVrijemePrikaz($aktualna['datum'])) . '</strong></div>' : '';
+        $tablica = self::tablica($p);
         $dana = (int) $p['danaArhive'];
         $css = self::CSS;
         $tema = ($p['tema'] ?? '') === 'tamna' ? 'tamna' : 'svijetla';
@@ -159,7 +160,10 @@ html[data-tema="tamna"] body .cjenik{--cjenik-akcent:#e06058}
 *{box-sizing:border-box}
 body{margin:0;background:var(--pozadina);color:var(--tekst);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
 .okvir{max-width:1200px;margin:0 auto;padding:0 24px}
-.zaglavlje{padding-top:56px;padding-bottom:32px}
+.zaglavlje{padding-top:56px;padding-bottom:32px;display:flex;justify-content:space-between;align-items:flex-end;gap:16px 32px;flex-wrap:wrap}
+.vrijedi{display:grid;gap:2px;text-align:right;padding:12px 18px;border-radius:14px;background:var(--akcent-blago);color:var(--akcent)}
+.vrijedi span{font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;opacity:.8}
+.vrijedi strong{font-size:1.05rem}
 .zaglavlje h1{font-size:clamp(2rem,5vw,3rem);line-height:1.1;margin:0 0 14px;letter-spacing:-.025em;font-weight:750}
 .obrt{margin:.15em 0;color:var(--blago);font-size:1.05rem}
 .obrt strong{font-weight:700}
@@ -198,7 +202,8 @@ $css
 }
 @media (max-width:640px){
   .okvir{padding:0 12px}
-  .zaglavlje{padding-top:32px;padding-bottom:20px}
+  .zaglavlje{padding-top:32px;padding-bottom:20px;align-items:flex-start}
+  .vrijedi{text-align:left;padding:10px 14px}
   .glavna{padding:4px 16px 16px;border-radius:14px}
 }
 @media (max-width:560px){
@@ -212,9 +217,12 @@ $css
 </head>
 <body>
 <header class="zaglavlje okvir">
+<div>
 <h1>$naslov</h1>
 <p class="obrt"><strong>$naziv</strong>$oib</p>
 <p class="obrt">$adresa</p>
+</div>
+$vrijedi
 </header>
 <div class="raspored okvir">
 <main class="karta glavna">
