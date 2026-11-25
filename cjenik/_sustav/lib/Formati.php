@@ -14,9 +14,10 @@ final class Formati
     const VRSTA = 'USLUGE';
     const SVA_MJESTA = 'ZA_SVA_PRODAJNA_MJESTA';
 
-    /** Razmaci postaju '_', a znakovi koji ne smiju u naziv datoteke postaju '-'. */
+    /** Razmaci postaju '_', zarezi i točke-zarezi se uklanjaju, a znakovi koji ne smiju u naziv datoteke postaju '-'. */
     public static function cistiDio(string $s): string
     {
+        $s = str_replace([',', ';'], ' ', $s);
         $s = preg_replace('/[\\\\\/:*?"<>|]+/u', '-', trim($s));
         return preg_replace('/[\s_]+/u', '_', $s);
     }

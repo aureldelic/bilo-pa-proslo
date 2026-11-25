@@ -20,26 +20,36 @@ Sve radi na hostingu stranice. Klijent se prijavi u preglednik, upiše usluge i 
 
 ## Kako izgleda
 
+### Javni cjenik
+
+<p align="center"><img src="docs/snimke/javni-cjenik.webp" alt="Javna stranica cjenika" width="820"></p>
+
+Javna stranica `/cjenik/` široka je do 1200 px. U zaglavlju su naziv obrta s OIB-om i adresa, a desno datum zadnjeg ažuriranja. Tablica ide preko cijele širine, grupirana po kategorijama, s trenutnom i baznom cijenom (cijena na 10.9.2026.) te oznakom akcije. Ispod su preuzimanje strojno čitljivog cjenika (XML/CSV) i arhiva prethodnih cjenika.
+
+### Sučelje za uređivanje
+
 <p align="center"><img src="docs/snimke/sucelje.webp" alt="Sučelje za uređivanje cjenika" width="820"></p>
 
-Usluge, trenutne cijene i cijene na 10.9.2026. upisuju se u tablicu. Pregled pokazuje kako će cjenik izgledati na stranici, a desno je arhiva objavljenih XML-ova.
+Redom: podaci o obrtu i prodajnom mjestu (s prikazom naziva iduće datoteke), postavke (zatvorene dok ih ne otvoriš), usluge i cijene, pregled tablice preko cijele širine i na kraju popis objavljenih cjenika.
 
 <table>
 <tr>
-<td width="50%"><img src="docs/snimke/prijava.webp" alt="Prijava"><br><sub>Prijava e-mailom i lozinkom, uz zaboravljenu lozinku</sub></td>
-<td width="50%"><img src="docs/snimke/javni-cjenik.webp" alt="Javni cjenik"><br><sub>Javna stranica cjenika s arhivom XML-ova</sub></td>
+<td width="50%"><img src="docs/snimke/pregled.webp" alt="Pregled tablice"><br><sub>Pregled tablice dok se piše</sub></td>
+<td width="50%"><img src="docs/snimke/postavke.webp" alt="Postavke"><br><sub>Postavke: umetanje u stranice, arhiva, ažuriranje, e-mail, sigurnost, prijava</sub></td>
 </tr>
 <tr>
-<td width="50%"><img src="docs/snimke/postavke.webp" alt="Postavke"><br><sub>Postavke: umetanje u stranice, arhiva, ažuriranje, e-mail, sigurnost</sub></td>
+<td width="50%"><img src="docs/snimke/prijava.webp" alt="Prijava"><br><sub>Prijava e-mailom i lozinkom, uz zaboravljenu lozinku</sub></td>
 <td width="50%"><img src="docs/snimke/tamna.webp" alt="Tamna tema"><br><sub>Tamna tema (prekidač u zaglavlju)</sub></td>
 </tr>
 </table>
 
+### Na mobitelu
+
 <p align="center">
-<img src="docs/snimke/mobitel.webp" alt="Sučelje na mobitelu" width="260">
+<img src="docs/snimke/javni-mobitel.webp" alt="Javni cjenik na mobitelu" width="260">
 &nbsp;&nbsp;
-<img src="docs/snimke/mobitel-pregled.webp" alt="Pregled tablice na mobitelu" width="260">
-<br><sub>Na mobitelu</sub>
+<img src="docs/snimke/mobitel.webp" alt="Sučelje na mobitelu" width="260">
+<br><sub>Na mobitelu je svaka usluga kartica s označenim cijenama; isto vrijedi i za tablicu umetnutu u stranice weba i widget.</sub>
 </p>
 
 ## Preuzimanje
@@ -70,10 +80,11 @@ Na instalacijskom ekranu plugin javlja ako ne može pisati u svoje mape ili ako 
 
 ## Kako klijent radi
 
-Na adresi `https://stranica.hr/cjenik/admin/` se prijavi e-mailom i lozinkom i uredi:
+Na adresi `https://stranica.hr/cjenik/admin/` se prijavi e-mailom i lozinkom i uredi (redom kako je u sučelju):
 
 - **Obrt i prodajno mjesto:** naziv, OIB ili matični broj obrta, prodajno mjesto (salon, servis, ured…), adresa i oznaka, ili kvačica *Jedan cjenik za sva prodajna mjesta*. Ti podaci ulaze u naziv datoteke.
 - **Usluge:** opis, trenutna cijena i bazna cijena (cijena na 10.9.2026.). Kad se upiše trenutna cijena, bazna se predloži sama. Neobavezno se dodaju kategorija, jedinica i akcija.
+- **Postavke** (ispod podataka o obrtu, zatvorene dok se ne otvore): tablica na stranicama weba, arhiva, ažuriranje plugina, slanje e-maila, sigurnost i prijava.
 - **Uvoz:** standardizirani Excel (`.xlsx`) ili CSV može zamijeniti sve stavke u nacrtu. Datoteka se obrađuje iz privremene upload putanje i ne sprema se na web. Uvoz ne objavljuje cjenik dok se ne klikne *Objavi*.
 - **Objavi cjenik:** nastaje novi XML/CSV, osvježi se javna stranica, umetne se tablica u stranice weba i obrišu se stari cjenici. Izmijenjeni cjenik objavljuje se **najkasnije do 11:00 na dan izmjene**.
 
@@ -85,7 +96,7 @@ Izmjene se automatski spremaju kao nacrt. Javno se ništa ne mijenja dok se ne k
 
 ```
 cjenik/
-├── index.html            javna stranica: tablica cijena i popis XML-ova
+├── index.html            javna stranica: tablica cijena, preuzimanje i arhiva
 ├── cjenik.xml            stalna poveznica na važeći cjenik
 ├── cjenik.csv            (ako je uključen CSV)
 ├── tablica.html          fragment tablice za widget

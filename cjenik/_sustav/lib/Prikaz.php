@@ -193,7 +193,7 @@ $css
 .glavna .cjenik-tablica{font-size:1.02rem}
 .glavna .cjenik-tablica thead th{background:none;padding-top:1.1em;padding-bottom:.8em;border-bottom:1px solid var(--rub-jak)}
 .glavna .cjenik-tablica th,.glavna .cjenik-tablica td{padding:.95em 1em}
-.glavna .cjenik-tablica .cjenik-kategorija th{padding:1.6em 1em .55em;font-size:1.05rem;font-weight:750;text-transform:uppercase;letter-spacing:.015em;color:var(--akcent);border-bottom:2px solid var(--akcent)}
+.glavna .cjenik-tablica .cjenik-kategorija th{padding:1.6em 1em .55em;font-size:1rem;font-weight:750;text-transform:uppercase;letter-spacing:.015em;color:var(--akcent);border-bottom:2px solid var(--akcent)}
 .glavna .cjenik-tablica tbody tr:not(.cjenik-kategorija):hover td{background:color-mix(in srgb,var(--akcent-blago) 55%,transparent)}
 .glavna .cjenik-tablica .cjenik-cijena{font-size:1.08em}
 .glavna .cjenik-podnozje{margin:18px 1em 0}

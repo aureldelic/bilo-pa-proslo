@@ -68,6 +68,11 @@ test('naziv datoteke prema Pravilniku NN 132/2026 (čl. 6. st. 3.)', function ()
     jednako(Formati::nazivDatoteke($p, 15, $pocetak, 'xml'), '12345678901_servis_Vukovarska_20_Osijek_U-03_USLUGE_015_20261001_0745.xml');
 });
 
+test('naziv datoteke: zarez iz adrese se uklanja', function () use ($pocetak) {
+    $p = Podaci::normaliziraj(['obveznik' => ['oib' => '12345678901'], 'objekt' => ['oblik' => 'salon', 'adresa' => 'Vukovarska 20, Osijek', 'oznaka' => '01']]);
+    jednako(Formati::nazivDatoteke($p, 4, $pocetak, 'xml'), '12345678901_salon_Vukovarska_20_Osijek_01_USLUGE_004_20261001_0745.xml');
+});
+
 test('naziv datoteke: jedan cjenik za sva prodajna mjesta (čl. 6. st. 4.)', function () use ($pocetak) {
     $p = Podaci::normaliziraj(['obveznik' => ['oib' => '12345678'], 'objekt' => ['oblik' => 'salon', 'adresa' => 'x', 'oznaka' => '1', 'svaMjesta' => true]]);
     jednako(Formati::nazivDatoteke($p, 1, $pocetak, 'csv'), '12345678_ZA_SVA_PRODAJNA_MJESTA_USLUGE_001_20261001_0745.csv');
