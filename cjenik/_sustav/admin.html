@@ -61,45 +61,6 @@
     <datalist id="oblici"><option value="servis"><option value="salon"><option value="ured"><option value="radionica"><option value="studio"><option value="ordinacija"><option value="ugostiteljski objekt"><option value="webshop"><option value="prodavaonica"></datalist>
   </section>
 
-  <section class="karta">
-    <h2>Usluge i cijene</h2>
-    <p class="opis">Uz trenutnu cijenu upiši <b>baznu cijenu</b>: cijenu koja je vrijedila 10.9.2026. (redovnu, bez akcije). Ako se cijena nije mijenjala, obje su iste. Izmijenjeni cjenik objavi najkasnije do 11:00 na dan izmjene.</p>
-    <table class="usluge">
-      <thead><tr>
-        <th class="c-kat">Kategorija</th><th class="c-naz">Opis usluge</th><th class="c-jed">Jedinica</th>
-        <th class="c-iznos" style="text-align:right">Trenutna €</th><th class="c-iznos" style="text-align:right">Bazna €</th>
-        <th class="c-dat">Datum bazne</th><th class="c-akc">Poseban oblik prodaje</th><th class="c-akcije"></th>
-      </tr></thead>
-      <tbody id="retci"></tbody>
-    </table>
-    <div id="prazno" class="prazno" hidden>Još nema usluga. Dodaj prvu.</div>
-    <div class="alati">
-      <button class="gumb" id="dodaj">+ Dodaj uslugu</button>
-      <button class="gumb" id="uvezi" type="button">Uvezi Excel / CSV</button>
-      <input id="datotekaUvoza" type="file" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" hidden>
-      <span class="savjet">Za uslugu uvedenu nakon 10.9.2026. upiši datum kad je uvedena i cijenu s tog dana. Kategorija je neobavezna i grupira usluge u tablici.</span>
-    </div>
-    <details class="upute uvoz-upute">
-      <summary>Kako pripremiti Excel ili CSV za uvoz?</summary>
-      <p>Prvi red mora sadržavati zaglavlja iz standardnog importnog predloška. Uvoz zamjenjuje sve stavke samo u nacrtu; javni cjenik ostaje isti dok ne klikneš <b>Objavi cjenik</b>.</p>
-      <p>Ako je <code>naziv_posebnog_oblika_prodaje</code> prazan, stavka je u redovnoj prodaji. Ako upišeš naziv, npr. <i>Ljetna akcija</i>, <i>Popust 20%</i> ili <i>Paket 3 za 2</i>, aplikacija automatski uključuje poseban oblik prodaje.</p>
-      <p>Za aktivnu ponudu u <code>najniza_cijena_30_dana</code> upiši najnižu cijenu prije početka ponude. Polje može ostati prazno samo ako je aplikacija može izračunati iz prethodnih objava.</p>
-    </details>
-  </section>
-
-  <div class="dvostupac">
-    <section class="karta">
-      <h2>Pregled tablice</h2>
-      <p class="opis">Ovako će cjenik izgledati na stranici (ažurira se dok pišeš).</p>
-      <div id="pregled"></div>
-    </section>
-    <section class="karta">
-      <h2>Objavljeni cjenici</h2>
-      <p class="opis">Nova datoteka nastaje samo kad se cijene ili podaci promijene. Prethodni cjenik ostaje dostupan <span id="dana">30</span> dana nakon što ga zamijeni novi, a onda se briše sam.</p>
-      <ul class="arhiva" id="arhiva"></ul>
-    </section>
-  </div>
-
   <details class="karta" id="napredno">
     <summary>Postavke</summary>
     <div class="postavke">
@@ -159,6 +120,44 @@
       </div>
     </div>
   </details>
+
+  <section class="karta">
+    <h2>Usluge i cijene</h2>
+    <p class="opis">Uz trenutnu cijenu upiši <b>baznu cijenu</b>: cijenu koja je vrijedila 10.9.2026. (redovnu, bez akcije). Ako se cijena nije mijenjala, obje su iste. Izmijenjeni cjenik objavi najkasnije do 11:00 na dan izmjene.</p>
+    <table class="usluge">
+      <thead><tr>
+        <th class="c-kat">Kategorija</th><th class="c-naz">Opis usluge</th><th class="c-jed">Jedinica</th>
+        <th class="c-iznos" style="text-align:right">Trenutna €</th><th class="c-iznos" style="text-align:right">Bazna €</th>
+        <th class="c-dat">Datum bazne</th><th class="c-akc">Poseban oblik prodaje</th><th class="c-akcije"></th>
+      </tr></thead>
+      <tbody id="retci"></tbody>
+    </table>
+    <div id="prazno" class="prazno" hidden>Još nema usluga. Dodaj prvu.</div>
+    <div class="alati">
+      <button class="gumb" id="dodaj">+ Dodaj uslugu</button>
+      <button class="gumb" id="uvezi" type="button">Uvezi Excel / CSV</button>
+      <input id="datotekaUvoza" type="file" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" hidden>
+      <span class="savjet">Za uslugu uvedenu nakon 10.9.2026. upiši datum kad je uvedena i cijenu s tog dana. Kategorija je neobavezna i grupira usluge u tablici.</span>
+    </div>
+    <details class="upute uvoz-upute">
+      <summary>Kako pripremiti Excel ili CSV za uvoz?</summary>
+      <p>Prvi red mora sadržavati zaglavlja iz standardnog importnog predloška. Uvoz zamjenjuje sve stavke samo u nacrtu; javni cjenik ostaje isti dok ne klikneš <b>Objavi cjenik</b>.</p>
+      <p>Ako je <code>naziv_posebnog_oblika_prodaje</code> prazan, stavka je u redovnoj prodaji. Ako upišeš naziv, npr. <i>Ljetna akcija</i>, <i>Popust 20%</i> ili <i>Paket 3 za 2</i>, aplikacija automatski uključuje poseban oblik prodaje.</p>
+      <p>Za aktivnu ponudu u <code>najniza_cijena_30_dana</code> upiši najnižu cijenu prije početka ponude. Polje može ostati prazno samo ako je aplikacija može izračunati iz prethodnih objava.</p>
+    </details>
+  </section>
+
+  <section class="karta">
+    <h2>Pregled tablice</h2>
+    <p class="opis">Ovako će cjenik izgledati na stranici (ažurira se dok pišeš).</p>
+    <div id="pregled"></div>
+  </section>
+
+  <section class="karta">
+    <h2>Objavljeni cjenici</h2>
+    <p class="opis">Nova datoteka nastaje samo kad se cijene ili podaci promijene. Prethodni cjenik ostaje dostupan <span id="dana">30</span> dana nakon što ga zamijeni novi, a onda se briše sam.</p>
+    <ul class="arhiva" id="arhiva"></ul>
+  </section>
 </main>
 <footer class="podnozje">{{AUTOR}}<span class="verzija-podnozje">Bilo pa prošlo v{{VERZIJA}}</span></footer>
 <div class="poruka" id="poruka" role="status"></div>
