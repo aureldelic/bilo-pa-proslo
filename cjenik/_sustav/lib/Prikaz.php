@@ -137,9 +137,8 @@ final class Prikaz
         $naslov = Util::esc($p['naslovStranice']);
         $naziv = Util::esc($p['obveznik']['naziv']);
         $adresa = !empty($p['objekt']['svaMjesta']) ? 'Sva prodajna mjesta' : Util::esc($p['objekt']['adresa']);
-        $oib = $p['obveznik']['oib'] !== '' ? '<span>' . (strlen($p['obveznik']['oib']) === 11 ? 'OIB ' : 'MB ') . Util::esc($p['obveznik']['oib']) . '</span>' : '';
-        $vrijedi = $aktualna ? '<span class="znacka">Vrijedi od ' . Util::esc(Util::datumVrijemePrikaz($aktualna['datum'])) . '</span>' : '';
-        $tablica = self::tablica($p);
+        $oib = $p['obveznik']['oib'] !== '' ? ' · ' . (strlen($p['obveznik']['oib']) === 11 ? 'OIB ' : 'MB ') . Util::esc($p['obveznik']['oib']) : '';
+        $tablica = self::tablica($p, ['datum' => $aktualna['datum'] ?? null]);
         $dana = (int) $p['danaArhive'];
         $css = self::CSS;
         $tema = ($p['tema'] ?? '') === 'tamna' ? 'tamna' : 'svijetla';
@@ -162,8 +161,8 @@ body{margin:0;background:var(--pozadina);color:var(--tekst);font:16px/1.55 syste
 .okvir{max-width:1200px;margin:0 auto;padding:0 24px}
 .zaglavlje{padding-top:56px;padding-bottom:32px}
 .zaglavlje h1{font-size:clamp(2rem,5vw,3rem);line-height:1.1;margin:0 0 14px;letter-spacing:-.025em;font-weight:750}
-.obrt{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--blago);font-size:1rem;align-items:center}
-.obrt strong{color:var(--tekst);font-weight:600}
+.obrt{margin:.15em 0;color:var(--blago);font-size:1.05rem}
+.obrt strong{font-weight:700}
 .znacka{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;background:var(--akcent-blago);color:var(--akcent);font-size:.85rem;font-weight:600}
 .raspored{display:grid;gap:24px;padding-bottom:64px}
 .karta{background:var(--povrsina);border:1px solid var(--rub);border-radius:18px;box-shadow:var(--sjena)}
@@ -214,7 +213,8 @@ $css
 <body>
 <header class="zaglavlje okvir">
 <h1>$naslov</h1>
-<div class="obrt"><strong>$naziv</strong><span>$adresa</span>$oib$vrijedi</div>
+<p class="obrt"><strong>$naziv</strong>$oib</p>
+<p class="obrt">$adresa</p>
 </header>
 <div class="raspored okvir">
 <main class="karta glavna">
